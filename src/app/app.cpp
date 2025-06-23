@@ -2,6 +2,7 @@
 #include "app.hpp"
 #include "../config_constants.hpp"
 #include "../logger/logger.hpp"
+#include <SDL2/SDL.h>
 
 App::App()
     : m_sdl_window(nullptr)
@@ -10,17 +11,34 @@ App::App()
     , m_sdl_gl_initialized(false)
 {
     start_async_logger(logger_constants::LOG_FILE_NAME.data());
+    async_log(LogLevel::Info, "------------------------------");
     async_log(LogLevel::Info, "App has been started");
 }
 
 App::~App() {
     cleanup();
 
-    async_log(LogLevel::Info, "App has been cleanup");
+    async_log(LogLevel::Info, "App shutdown complate");
+    async_log(LogLevel::Info, "------------------------------");
     stop_async_logger();
 }
 
-bool App::initialize(AppConfig app_config) {
+AppResult App::run() {
+    AppResult app_result;
+
+    // Put code soon
+
+    return app_result;
+}
+
+bool App::initialize(const SDLConfig& sdl_config, const GLConfig& gl_config) {
+    m_sdl_initialized = init_sdl(sdl_config);
+    m_sdl_gl_initialized = init_gl(gl_config);
+
+    return m_sdl_initialized && m_sdl_gl_initialized;
+}
+
+bool App::init_sdl(const SDLConfig& app_config) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, app_config.gl_context_major_version);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, app_config.gl_context_minor_version);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, app_config.gl_context_profile);
@@ -28,8 +46,9 @@ bool App::initialize(AppConfig app_config) {
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
-        auto err_msg = std::string("SDL could not initialize! SDL_Error: ") + SDL_GetError() + "\n";
+        auto err_msg = std::string("SDL could not initialize! SDL_Error: ") + SDL_GetError();
         async_log(LogLevel::Error, err_msg);
+        cleanup_sdl();
 
         return false;
     }
@@ -46,19 +65,9 @@ bool App::initialize(AppConfig app_config) {
 
     if (m_sdl_window == nullptr)
     {
-        auto err_msg = std::string("Window could not be created! SDL_Error: ") + SDL_GetError() + "\n";
+        auto err_msg = std::string("Window could not be created! SDL_Error: ") + SDL_GetError();
         async_log(LogLevel::Error, err_msg);
-
-        return false;
-    }
-
-    // Create OpenGL context
-    m_sdl_gl_context = SDL_GL_CreateContext(m_sdl_window);
-
-    if (m_sdl_gl_context == nullptr)
-    {
-        auto err_msg = "OpenGL context could not be created!\n";
-        async_log(LogLevel::Error, err_msg);
+        cleanup_sdl();
 
         return false;
     }
@@ -66,17 +75,85 @@ bool App::initialize(AppConfig app_config) {
     return true;
 }
 
+bool App::init_gl(const GLConfig& gl_config) {
+    // Create OpenGL context
+    m_sdl_gl_context = SDL_GL_CreateContext(m_sdl_window);
+
+    if (m_sdl_gl_context == nullptr)
+    {
+        async_log(LogLevel::Error, "OpenGL context could not be created!");
+        cleanup_gl();
+
+        return false;
+    }
+
+    // Load function pointers
+    if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
+    {
+        async_log(LogLevel::Error, "Failed to initialize GLAD");
+        cleanup_gl();
+
+        return false;
+    }
+
+    // Set blend mode
+    if (gl_config.blend_mode != BlendMode::None)
+    {
+        glEnable(GL_BLEND);
+
+        switch (gl_config.blend_mode)
+        {
+            case BlendMode::Alpha:
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+                break;
+            
+            case BlendMode::Custom:
+                glBlendFunc(gl_config.custom_blend_src, gl_config.custom_blend_dst);
+
+                break;
+
+            default:
+                glDisable(GL_BLEND);
+                async_log(LogLevel::Warning, "Unknown blend mode");
+        }
+    }
+    else
+    {
+        glDisable(GL_BLEND);
+    }
+
+    /*
+        1 = VSync ON (Synchronize to display refresh rate)
+        0 = VSync OFF (Immediate update)
+        -1 = Adaptive VSync (Enable if its supported)
+    */
+    auto interval = static_cast<int>(gl_config.vsync_mode);
+    switch (interval)
+    {
+        case 0: case 1: case -1:
+            SDL_GL_SetSwapInterval(interval);
+
+            break;
+
+        default:
+            SDL_GL_SetSwapInterval(0);
+            async_log(LogLevel::Warning, "Unknown vsync mode");
+    }
+
+    return true;
+}
+
 void App::cleanup() {
+    cleanup_gl();
+    cleanup_sdl();
+}
+
+void App::cleanup_sdl() {
     if (m_sdl_window != nullptr)
     {
         SDL_DestroyWindow(m_sdl_window);
         m_sdl_window = nullptr;
-    }
-
-    if (m_sdl_gl_context != nullptr)
-    {
-        SDL_GL_DeleteContext(m_sdl_gl_context);
-        m_sdl_gl_initialized = false;
     }
 
     if (m_sdl_initialized)
@@ -86,8 +163,12 @@ void App::cleanup() {
     }
 }
 
-AppResult App::run() {
-    AppResult app_result;
+void App::cleanup_gl() {
+    if (m_sdl_gl_context != nullptr)
+    {
+        SDL_GL_DeleteContext(m_sdl_gl_context);
+        m_sdl_gl_context = nullptr;
 
-    return app_result;
+        m_sdl_gl_initialized = false;
+    }
 }

@@ -1,8 +1,9 @@
 #pragma once
 
+#include <glad/glad.h>
 #include "SDL2/SDL.h"
 
-struct AppConfig {
+struct SDLConfig {
     int             gl_context_major_version    = 4;
     int             gl_context_minor_version    = 6;
     SDL_GLprofile   gl_context_profile          = SDL_GL_CONTEXT_PROFILE_CORE;
@@ -12,11 +13,34 @@ struct AppConfig {
     int             window_width                = 600;
     int             window_height               = 400;
     int             window_flags                = SDL_WINDOW_HIDDEN | SDL_WINDOW_OPENGL;
+    int             window_fps                  = 60;
+};
+
+enum class BlendMode {
+    None,
+    Alpha,
+    Custom
+};
+
+enum class VSyncMode {
+    None        = 0,
+    Disable     = 0,
+    Enable      = 1,
+    Adaptive    = -1
+};
+
+struct GLConfig {
+    BlendMode   blend_mode  = BlendMode::Alpha;
+    VSyncMode   vsync_mode  = VSyncMode::Enable;
+
+    // Optional for custom blending
+    GLenum      custom_blend_src = GL_SRC_ALPHA;
+    GLenum      custom_blend_dst = GL_ONE_MINUS_SRC_ALPHA;
 };
 
 struct AppResult {
-    int code = 1;
-    size_t time_elapsed = 0;
+    int         code            = 1;
+    size_t      time_elapsed    = 0;
 };
 
 class App {
@@ -24,7 +48,7 @@ public:
     App();
     ~App();
 
-    bool initialize(AppConfig app_config);
+    bool initialize(const SDLConfig& app_config, const GLConfig& gl_config);
 
     void cleanup();
     AppResult run();
@@ -35,4 +59,10 @@ private:
 
     bool            m_sdl_initialized;
     bool            m_sdl_gl_initialized;
+
+    bool            init_sdl(const SDLConfig& app_config);
+    bool            init_gl(const GLConfig& gl_config);
+
+    void            cleanup_sdl();
+    void            cleanup_gl();
 };

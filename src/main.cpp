@@ -8,10 +8,12 @@ int main(int argc, char* args[]) {
     static_cast<void>(argc);
     static_cast<void>(args);
 
-    AppConfig   config;
+    SDLConfig   sdl_config;
+    GLConfig    gl_config;
+
     App         app;
 
-    if (!app.initialize(config))
+    if (!app.initialize(sdl_config, gl_config))
     {
         std::cerr << "Failed to initialize application" << "\n";
 
