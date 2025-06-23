@@ -6,37 +6,37 @@
 /*
     Packet header (8bytes)
 */
-struct PacketHeader {
+struct GamePacketHeader {
     uint32_t magic_number;
     uint32_t body_size;
 };
 
-static_assert(sizeof(PacketHeader) == 8);
+static_assert(sizeof(GamePacketHeader) == 8);
 
 /*
-    Position (8bytes)
+    Position2D (8bytes)
 */
-struct Position {
+struct Position2D {
     float x;
     float y;
 };
 
-static_assert(sizeof(Position) == 8);
+static_assert(sizeof(Position2D) == 8);
 
 /*
-    Velocity (8bytes)
+    Velocity2D (8bytes)
 */
-struct Velocity {
+struct Velocity2D {
     float x;
     float y;
 };
 
-static_assert(sizeof(Velocity) == 8);
+static_assert(sizeof(Velocity2D) == 8);
 
 /*
-    Stage object (8bytes)
+    Stage snapshot (8bytes)
 */
-struct Stage {
+struct StageSnapshot {
     uint8_t     id;
     uint8_t     name;
     uint8_t     state;
@@ -46,19 +46,19 @@ struct Stage {
 };
 
 constexpr size_t STAGE_OBJECT_SIZE = 8;
-static_assert(sizeof(Stage) == STAGE_OBJECT_SIZE);
+static_assert(sizeof(StageSnapshot) == STAGE_OBJECT_SIZE);
 
 /*
-    Player object (32bytes)
+    Player snapshot (32bytes)
 */
-struct Player {
+struct PlayerSnapshot {
     uint8_t     id;
     uint8_t     name;
     uint8_t     state;
     uint8_t     attack_pattern;
 
-    Position    pos;
-    Velocity    vel;
+    Position2D  pos;
+    Velocity2D  vel;
     float       radius;
     float       angle;
 
@@ -69,38 +69,38 @@ struct Player {
 };
 
 constexpr size_t PLAYER_OBJECT_SIZE = 32;
-static_assert(sizeof(Player) == PLAYER_OBJECT_SIZE);
+static_assert(sizeof(PlayerSnapshot) == PLAYER_OBJECT_SIZE);
 
 /*
-    Enemy object (32bytes)
+    Enemy snapshot (32bytes)
 */
-struct Enemy {
+struct EnemySnapshot {
     uint8_t     id;
     uint8_t     name;
     uint8_t     state;
     uint8_t     attack_pattern;
     
-    Position    pos;
-    Velocity    vel;
+    Position2D  pos;
+    Velocity2D  vel;
     float       radius;
     float       angle;
     uint32_t    health;
 };
 
 constexpr size_t ENEMY_OBJECT_SIZE = 32;
-static_assert(sizeof(Enemy) == ENEMY_OBJECT_SIZE);
+static_assert(sizeof(EnemySnapshot) == ENEMY_OBJECT_SIZE);
 
 /*
-    Boss object (36bytes)
+    Boss snapshot (36bytes)
 */
-struct Boss {
+struct BossSnapshot {
     uint8_t     id;
     uint8_t     name;
     uint8_t     state;
     uint8_t     attack_pattern;
 
-    Position    pos;
-    Velocity    vel;
+    Position2D  pos;
+    Velocity2D  vel;
     float       radius;
     float       angle;
     uint32_t    health;
@@ -112,15 +112,15 @@ struct Boss {
 };
 
 constexpr size_t BOSS_OBJECT_SIZE = 36;
-static_assert(sizeof(Boss) == BOSS_OBJECT_SIZE);
+static_assert(sizeof(BossSnapshot) == BOSS_OBJECT_SIZE);
 
 /*
-    Bullet object (32bytes)
+    Bullet snapshot (32bytes)
 */
-struct Bullet {
+struct BulletSnapshot {
     uint32_t    id;
-    Position    pos;
-    Velocity    vel;
+    Position2D  pos;
+    Velocity2D  vel;
     float       radius;
     float       angle;
     uint32_t    damage;
@@ -132,31 +132,31 @@ struct Bullet {
 };
 
 constexpr size_t BULLET_OBJECT_SIZE = 36;
-static_assert(sizeof(Bullet) == BULLET_OBJECT_SIZE);
+static_assert(sizeof(BulletSnapshot) == BULLET_OBJECT_SIZE);
 
 /*
-    Item object (32bytes)
+    Item snapshot (32bytes)
 */
-struct Item {
+struct ItemSnapshot {
     uint8_t     id;
     uint8_t     name;
     uint8_t     state;
     uint8_t     flight_pattern;
 
-    Position    pos;
-    Velocity    vel;
+    Position2D  pos;
+    Velocity2D  vel;
     float       radius;
     float       angle;
     float       score;
 };
 
 constexpr size_t ITEM_OBJECT_SIZE = 32;
-static_assert(sizeof(Item) == ITEM_OBJECT_SIZE);
+static_assert(sizeof(ItemSnapshot) == ITEM_OBJECT_SIZE);
 
 /*
-    Frame object
+    Frame snapshot
 */
-struct Frame {
+struct FrameSnapshot {
     uint8_t     client_id;
     uint8_t     opponent_id;
     uint8_t     mode;
@@ -172,28 +172,28 @@ struct Frame {
 
     /***** 16 bytes total *****/
 
-    // Stage object         [8bytes]
-    Stage                   stage;
+    // Stage snapshot               [8bytes]
+    StageSnapshot                   stage;
 
-    // Player objects       [32bytes * n]
-    uint32_t                player_count;
-    std::vector<Player>     player_vector;
+    // Player snapshot              [32bytes * n]
+    uint32_t                        player_count;
+    std::vector<PlayerSnapshot>     player_vector;
 
-    // Enemy objects        [32bytes * n]
-    uint32_t                enemy_count;
-    std::vector<Enemy>      enemy_vector;
+    // Enemy snapshot               [32bytes * n]
+    uint32_t                        enemy_count;
+    std::vector<EnemySnapshot>      enemy_vector;
 
-    // Boss objects         [36bytes * n]
-    uint32_t                boss_count;
-    std::vector<Boss>       boss_vector;
+    // Boss snapshot                [36bytes * n]
+    uint32_t                        boss_count;
+    std::vector<BossSnapshot>       boss_vector;
 
-    // Bullet objects       [32bytes * n]
-    uint32_t                bullet_count;
-    std::vector<Bullet>     bullet_vector;
+    // Bullet snapshot              [32bytes * n]
+    uint32_t                        bullet_count;
+    std::vector<BulletSnapshot>     bullet_vector;
 
-    // Item objects         [32bytes * n]
-    uint32_t                item_count;
-    std::vector<Item>       item_vector;
+    // Item snapshot                [32bytes * n]
+    uint32_t                        item_count;
+    std::vector<ItemSnapshot>       item_vector;
 };
 
 constexpr size_t FRAME_OBJECT_FIXED_HEADER_SIZE = 16;

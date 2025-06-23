@@ -67,7 +67,7 @@ public:
     ClientConnection(SOCKET client_sock);
     ~ClientConnection();
 
-    // Disable copy constructor and copy assignment operator
+    // Delete copy constructor and copy assignment operator
     ClientConnection(const ClientConnection&) = delete;
     ClientConnection& operator=(const ClientConnection&) = delete;
 

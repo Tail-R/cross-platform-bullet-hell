@@ -49,7 +49,7 @@ Mesh::Mesh(
     GLsizei offset = 0;
     GLsizei stride = vertex_size * sizeof(GLfloat);
 
-    for (GLuint i = 0; i < attribute_sizes.size(); i++)
+    for (GLsizei i = 0; i < static_cast<GLsizei>(attribute_sizes.size()); i++)
     {
         glEnableVertexAttribArray(i);
 
@@ -59,7 +59,7 @@ Mesh::Mesh(
             GL_FLOAT,                           // Type
             GL_FALSE,                           // Normalized
             stride,                             // Stride
-            (void*)(offset * sizeof(GLfloat))   // Offset to the start
+            reinterpret_cast<void*>(static_cast<uintptr_t>(offset * sizeof(GLfloat)))   // Offset to the start
         );
 
         offset += attribute_sizes[i];
@@ -69,9 +69,21 @@ Mesh::Mesh(
 }
 
 Mesh::~Mesh() {
-    glDeleteBuffers(1, &m_vbo);
-    glDeleteBuffers(1, &m_ebo);
-    glDeleteVertexArrays(1, &m_vao);
+    cleanup();
+}
+
+Mesh::Mesh(Mesh&& other) noexcept {
+    swap_attributes(&other);
+}
+
+Mesh& Mesh::operator=(Mesh&& other) noexcept {
+    if (this != &other)
+    {
+        cleanup();
+        swap_attributes(&other);
+    }
+
+    return *this;
 }
 
 void Mesh::bind() const {
@@ -86,4 +98,33 @@ void Mesh::draw() const {
     glBindVertexArray(m_vao);
     glDrawElements(GL_TRIANGLES, m_index_count, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+}
+
+void Mesh::cleanup() {
+    if (m_vbo != 0)
+    {
+        glDeleteBuffers(1, &m_vbo);
+    }
+    
+    if (m_ebo != 0)
+    {
+        glDeleteBuffers(1, &m_ebo);
+    }
+    
+    if (m_vao != 0)
+    {
+        glDeleteVertexArrays(1, &m_vao);
+    }
+}
+
+void Mesh::swap_attributes(Mesh* other) {
+    this->m_vao         = other->m_vao;
+    this->m_vbo         = other->m_vbo;
+    this->m_ebo         = other->m_ebo;
+    this->m_index_count = other->m_index_count;
+
+    other->m_vao         = 0;
+    other->m_vbo         = 0;
+    other->m_ebo         = 0;
+    other->m_index_count = 0;
 }

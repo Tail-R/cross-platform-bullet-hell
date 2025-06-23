@@ -16,6 +16,14 @@ public:
     Texture2D();
     ~Texture2D();
 
+    // Delete copy constructor and copy assignment operator
+    Texture2D(const Texture2D&) = delete;
+    Texture2D& operator=(const Texture2D&) = delete;
+    
+    // Delete move constructor and move assignment operator
+    Texture2D(Texture2D&&) = delete;
+    Texture2D& operator=(Texture2D&&) = delete;
+
     bool load_from_file(
         std::string_view image_path,
         const Texture2DConfig& texture_config = Texture2DConfig()

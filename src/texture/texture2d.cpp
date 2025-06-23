@@ -2,7 +2,6 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-
 #include "texture2d.hpp"
 
 Texture2D::Texture2D()

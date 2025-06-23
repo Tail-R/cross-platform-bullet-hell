@@ -3,13 +3,13 @@
 #include <sstream>
 #include "frame_template.hpp"
 
-std::string frame_to_json_str(const Frame& frame) {
+std::string frame_to_json_str(const FrameSnapshot& frame) {
     std::ostringstream oss;
 
     oss << "{";
 
     /*
-        Convert Frame attributes into json string
+        Convert FrameSnapshot attributes into json string
     */
     oss << "\"frame\":{"
         << "\"client_id\":"     << static_cast<float>(frame.client_id)    << ","
@@ -189,6 +189,6 @@ std::string frame_to_json_str(const Frame& frame) {
     return oss.str();
 }
 
-void print_frame(const Frame& frame) {
+void print_frame(const FrameSnapshot& frame) {
     std::cout << frame_to_json_str(frame) << "\n";
 }

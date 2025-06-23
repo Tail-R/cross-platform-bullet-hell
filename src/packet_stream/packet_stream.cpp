@@ -1,5 +1,6 @@
 #include <iostream>
 #include <array>
+#include <cstring>
 #include "packet_stream.hpp"
 
 namespace {
@@ -31,7 +32,7 @@ void PacketStreamClient::disconnect() {
     }
 }
 
-std::optional<Frame> PacketStreamClient::retrieve_frame(size_t max_attempts) {
+std::optional<FrameSnapshot> PacketStreamClient::retrieve_frame(size_t max_attempts) {
     for (size_t attempt = 0; attempt < max_attempts; attempt++)
     {
         // Insert packet into buffer
@@ -42,7 +43,7 @@ std::optional<Frame> PacketStreamClient::retrieve_frame(size_t max_attempts) {
 
         while (true)
         {
-            if(m_buffer.size() < sizeof(PacketHeader))
+            if(m_buffer.size() < sizeof(GamePacketHeader))
             {
                 break;
             }
@@ -72,8 +73,8 @@ std::optional<Frame> PacketStreamClient::retrieve_frame(size_t max_attempts) {
     return std::nullopt;
 }
 
-std::vector<Frame> PacketStreamClient::retrieve_all_frames(size_t max_attempts) {
-    std::vector<Frame> frames;
+std::vector<FrameSnapshot> PacketStreamClient::retrieve_all_frames(size_t max_attempts) {
+    std::vector<FrameSnapshot> frames;
 
     for (size_t attempt = 0; attempt < max_attempts; attempt++) {
         if (!refill_buffer())
@@ -83,7 +84,7 @@ std::vector<Frame> PacketStreamClient::retrieve_all_frames(size_t max_attempts) 
 
         while (true)
         {
-            if (m_buffer.size() < sizeof(PacketHeader))
+            if (m_buffer.size() < sizeof(GamePacketHeader))
             {
                 break;
             }
@@ -156,15 +157,15 @@ void PacketStreamClient::consume_buffer(size_t size) {
     }
 }
 
-std::optional<PacketHeader> PacketStreamClient::try_extract_packet_header() {
-    if(m_buffer.size() < sizeof(PacketHeader))
+std::optional<GamePacketHeader> PacketStreamClient::try_extract_packet_header() {
+    if(m_buffer.size() < sizeof(GamePacketHeader))
     {
         return std::nullopt;
     }
 
     // Read the first 4 bytes of the buffer and check if its a magic number
-    PacketHeader packet_header;
-    memcpy(&packet_header, m_buffer.data(), sizeof(PacketHeader));
+    GamePacketHeader packet_header;
+    memcpy(&packet_header, m_buffer.data(), sizeof(GamePacketHeader));
 
     if (packet_header.magic_number != m_magic_number)
     {
@@ -176,12 +177,12 @@ std::optional<PacketHeader> PacketStreamClient::try_extract_packet_header() {
     return packet_header;
 }
 
-std::optional<Frame> PacketStreamClient::try_extract_frame(const PacketHeader& packet_header) {
-    const auto total_packet_size = sizeof(PacketHeader) + packet_header.body_size;
+std::optional<FrameSnapshot> PacketStreamClient::try_extract_frame(const GamePacketHeader& packet_header) {
+    const auto total_packet_size = sizeof(GamePacketHeader) + packet_header.body_size;
 
     if (m_buffer.size() < total_packet_size)
     {
-        const auto bytes_needed = sizeof(PacketHeader) + packet_header.body_size - m_buffer.size();
+        const auto bytes_needed = sizeof(GamePacketHeader) + packet_header.body_size - m_buffer.size();
 
         // Receive extra bytes
         auto extra_packet_opt = m_client_socket.recv_exact(bytes_needed);
@@ -200,8 +201,8 @@ std::optional<Frame> PacketStreamClient::try_extract_frame(const PacketHeader& p
     }
 
     std::vector<std::byte> frame_data(
-        m_buffer.begin() + sizeof(PacketHeader),
-        m_buffer.begin() + sizeof(PacketHeader) + packet_header.body_size
+        m_buffer.begin() + sizeof(GamePacketHeader),
+        m_buffer.begin() + sizeof(GamePacketHeader) + packet_header.body_size
     );
 
     auto frame_opt = deserialize_frame(frame_data);
@@ -214,10 +215,10 @@ std::optional<Frame> PacketStreamClient::try_extract_frame(const PacketHeader& p
     return frame_opt;
 }
 
-bool PacketStreamClient::is_valid_packet_size(const PacketHeader& packet_header) {
+bool PacketStreamClient::is_valid_packet_size(const GamePacketHeader& packet_header) {
     // Validation for packet size
     auto expr_1 = packet_header.body_size > 0;
-    auto expr_2 = packet_header.body_size + sizeof(PacketHeader) <= m_max_packet_size;
+    auto expr_2 = packet_header.body_size + sizeof(GamePacketHeader) <= m_max_packet_size;
 
     return expr_1 && expr_2;
 }

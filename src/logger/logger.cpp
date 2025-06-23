@@ -68,7 +68,7 @@ namespace {
 
             while (!log_queue.empty())
             {
-                log_file << log_queue.front() << std::endl;
+                log_file << log_queue.front() << "\n";
                 log_queue.pop();
             }
 

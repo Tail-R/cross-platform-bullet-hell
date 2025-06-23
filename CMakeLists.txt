@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.12)
-project(${TARGET_NAME} LANGUAGES C CXX)
+cmake_minimum_required(VERSION 3.26)
+project(bullet_hell_client LANGUAGES C CXX)
 
 # Target Name
 set(TARGET_NAME bullet_hell_client)
@@ -19,19 +19,20 @@ set(GLAD_SRC external/glad/src/glad.c)
 # Source files
 set(SRC_FILES
     ${SRC_DIR}/main.cpp
+    ${SRC_DIR}/app/app.cpp
     ${SRC_DIR}/logger/logger.cpp
     ${SRC_DIR}/frame/frame_template.cpp
     ${SRC_DIR}/frame/frame_serializer.cpp
     ${SRC_DIR}/socket/socket.cpp
     ${SRC_DIR}/packet_stream/packet_stream.cpp
-    ${SRC_DIR}/renderer/renderer.cpp
     ${SRC_DIR}/mesh/mesh.cpp
     ${SRC_DIR}/shader/shader.cpp
     ${SRC_DIR}/texture/texture2d.cpp
+    ${SRC_DIR}/renderer/renderer.cpp
     ${GLAD_SRC}
 )
 
-# Fetch SDL before defining the target
+# Include fetch scripts
 include(${CMAKE_SOURCE_DIR}/external/FetchSDL.cmake)
 
 # Executable
@@ -44,15 +45,17 @@ target_include_directories(${TARGET_NAME} PRIVATE
     external/glm
 )
 
+# Link libraries
+target_link_libraries(${TARGET_NAME} PRIVATE
+    SDL2::SDL2
+)
+
 # Link OS-specific libraries
 if(WIN32)
-    target_link_libraries(${TARGET_NAME}
+    target_link_libraries(${TARGET_NAME} PRIVATE
         mingw32
-        SDL2::SDL2
         ws2_32
     )
 elseif(UNIX)
-    target_link_libraries(${TARGET_NAME}
-        SDL2::SDL2
-    )
+
 endif()

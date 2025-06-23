@@ -12,7 +12,7 @@ namespace {
     }
 }
 
-std::optional<std::vector<std::byte>> serialize_frame(const Frame& frame) {
+std::optional<std::vector<std::byte>> serialize_frame(const FrameSnapshot& frame) {
     auto player_count_validation = frame.player_count != frame.player_vector.size(); 
     auto enemy_count_validation = frame.enemy_count != frame.enemy_vector.size();
     auto boss_count_validation = frame.bullet_count != frame.bullet_vector.size();
@@ -152,8 +152,8 @@ std::optional<std::vector<std::byte>> serialize_frame(const Frame& frame) {
     return bytes;
 }
 
-std::optional<Frame> deserialize_frame(const std::vector<std::byte>& bytes) {
-    Frame frame = {};
+std::optional<FrameSnapshot> deserialize_frame(const std::vector<std::byte>& bytes) {
+    FrameSnapshot frame = {};
     auto bytes_offset = bytes.data();
 
     // Copy the fixed area of the frame object
