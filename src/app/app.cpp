@@ -1,8 +1,9 @@
+#include <iostream>
 #include <string>
 #include "app.hpp"
 #include "../config_constants.hpp"
 #include "../logger/logger.hpp"
-#include <SDL2/SDL.h>
+#include "../input_manager/input_manager.hpp"
 
 App::App()
     : m_sdl_window(nullptr)
@@ -25,8 +26,30 @@ App::~App() {
 
 AppResult App::run() {
     AppResult app_result;
+    InputManager input_manager;
 
-    // Put code soon
+    bool quit = false;
+
+    show_window();
+
+    while (!quit)
+    {
+        input_manager.collect_input_events();
+
+        auto game_input = input_manager.get_game_input();
+
+        if (game_input.pressed.test(static_cast<size_t>(GameAction::Shoot)))
+        {
+            std::cout << "Confirm pressed" << "\n";
+        }
+
+        if (input_manager.get_quit_request())
+        {
+            quit = true;
+        }
+    }
+
+    hide_window();
 
     return app_result;
 }
@@ -171,4 +194,12 @@ void App::cleanup_gl() {
 
         m_sdl_gl_initialized = false;
     }
+}
+
+void App::show_window() {
+    SDL_ShowWindow(m_sdl_window);
+}
+
+void App::hide_window() {
+    SDL_HideWindow(m_sdl_window);
 }

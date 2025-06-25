@@ -1,6 +1,8 @@
 #include <iostream>
-#include <array>
+#include <cstdint>
+#include <cstddef>
 #include <cstring>
+#include <array>
 #include "packet_stream.hpp"
 
 namespace {

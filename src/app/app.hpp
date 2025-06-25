@@ -49,8 +49,8 @@ public:
     ~App();
 
     bool initialize(const SDLConfig& app_config, const GLConfig& gl_config);
-
     void cleanup();
+
     AppResult run();
 
 private:
@@ -65,4 +65,7 @@ private:
 
     void            cleanup_sdl();
     void            cleanup_gl();
+
+    void            show_window();
+    void            hide_window();
 };

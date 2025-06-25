@@ -18,17 +18,29 @@ set(GLAD_SRC external/glad/src/glad.c)
 
 # Source files
 set(SRC_FILES
+    # Entry point
     ${SRC_DIR}/main.cpp
-    ${SRC_DIR}/app/app.cpp
-    ${SRC_DIR}/logger/logger.cpp
+
+    # Game system
     ${SRC_DIR}/frame/frame_template.cpp
     ${SRC_DIR}/frame/frame_serializer.cpp
     ${SRC_DIR}/socket/socket.cpp
     ${SRC_DIR}/packet_stream/packet_stream.cpp
+
+    # SDL2 abstract class
+    ${SRC_DIR}/app/app.cpp
+    ${SRC_DIR}/input_manager/input_manager.cpp
+    ${SRC_DIR}/renderer/renderer.cpp
+
+    # OpenGl abstract class
     ${SRC_DIR}/mesh/mesh.cpp
     ${SRC_DIR}/shader/shader.cpp
     ${SRC_DIR}/texture/texture2d.cpp
-    ${SRC_DIR}/renderer/renderer.cpp
+
+    # Utilities
+    ${SRC_DIR}/logger/logger.cpp
+
+    # Glad
     ${GLAD_SRC}
 )
 
