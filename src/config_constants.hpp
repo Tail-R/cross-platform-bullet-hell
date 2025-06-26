@@ -3,12 +3,18 @@
 #include <cstdint>
 #include <string_view>
 
-namespace general_constants {
+/*
+    The variable PROJECT_ROOT_DIR is a macro declared in CMakeLists.txt
+    No need to worry about errors that your editor'sIntelliSense shows you
+*/
 
+namespace general_constants {
+    constexpr std::string_view  ASSETS_DIR      = PROJECT_ROOT_DIR "/assets";
 }
 
 namespace logger_constants {
-    constexpr std::string_view LOG_FILE_NAME = "app.log";
+    constexpr std::string_view  LOG_FILE_DIR    = "log";
+    constexpr std::string_view  LOG_FILE_NAME   = "app.log";
 }
 
 namespace render_constants {
@@ -22,4 +28,8 @@ namespace socket_constants {
     constexpr uint16_t          SERVER_PORT             = 6198;
     constexpr uint32_t          SERVER_MAGIC_NUMBER     = 0x7F3B29D1;
     constexpr uint32_t          SERVER_MAX_PACKET_SIZE  = 10 * 1024 * 1024; // 10MB
+}
+
+namespace shader_constants {
+    constexpr std::string_view  SHADER_DIR = PROJECT_ROOT_DIR "/assets/glsl";
 }

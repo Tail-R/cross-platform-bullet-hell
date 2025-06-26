@@ -18,9 +18,7 @@ InputManager::InputManager() {
     clear_input_snapshot();
 }
 
-InputManager::~InputManager() {
-
-}
+InputManager::~InputManager() = default;
 
 void InputManager::collect_input_events() {
     clear_input_snapshot();

@@ -78,3 +78,5 @@ if(WIN32)
 elseif(UNIX)
 
 endif()
+
+add_compile_definitions(PROJECT_ROOT_DIR=\"${CMAKE_SOURCE_DIR}\")

@@ -1,37 +1,48 @@
+#include <iostream>
 #include "texture_factory.hpp"
 
 TextureFactory::TextureFactory() {
     clear_cache();
 }
 
-TextureFactory::~TextureFactory() {
+TextureFactory::~TextureFactory() = default;
 
-}
-
-std::optional<std::shared_ptr<Texture2D>> get_texture(
+std::shared_ptr<Texture2D> TextureFactory::get_texture(
     const std::string& texture_path
 ) {
-    // Implement soon
+    const auto it = m_texture_cache.find(texture_path);
 
-    return std::nullopt;
+    if (it != m_texture_cache.end())
+    {
+        return it->second;
+    }
+
+    std::cerr << "Failed to retrieve texture: " << texture_path << "\n";
+
+    return nullptr;
 }
 
 bool TextureFactory::load_texture(
     const std::string& texture_path,
     Texture2DConfig texture_config
 ) {
-    auto texture = Texture2D();
+    auto texture_ptr = std::make_shared<Texture2D>();
 
-    const auto load_result = texture.load_from_file(
+    const auto load_result = texture_ptr->load_from_file(
         texture_path,
         texture_config
     );
 
-    m_texture_cache[texture_path] = std::make_shared<Texture2D>(
-        std::move(texture)
-    );
+    if (!load_result)
+    {
+        std::cerr << "Failed to load texture: " << texture_path << "\n";
 
-    return load_result;
+        return false;
+    }
+
+    m_texture_cache[texture_path] = texture_ptr;
+
+    return true;
 }
 
 void TextureFactory::clear_cache() {
