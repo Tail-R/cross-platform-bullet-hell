@@ -49,7 +49,7 @@ Texture2D& Texture2D::operator=(Texture2D&& other) noexcept {
     return *this;
 }
 
-bool Texture2D::load_from_file(
+void Texture2D::load_from_file(
     std::string_view image_path,
     const Texture2DConfig& texture_config
 ) {
@@ -58,7 +58,7 @@ bool Texture2D::load_from_file(
     {
         std::cerr << "Texture ID not set" << "\n";
 
-        return false;
+        glGenTextures(1, &m_texture_id);
     }
 
     stbi_set_flip_vertically_on_load(texture_config.flip_vertically);
@@ -81,7 +81,9 @@ bool Texture2D::load_from_file(
         std::cerr << "stb_image error: " << stbi_failure_reason() << "\n";
         std::cerr << "Falling back to the default texture" << "\n";
 
-        return load_default_texture();
+        load_default_texture();
+
+        return;
     }
 
     GLenum format = (channels == 4) ? GL_RGBA :
@@ -118,8 +120,6 @@ bool Texture2D::load_from_file(
     unbind();
 
     stbi_image_free(image_data);
-
-    return true;
 }
 
 void Texture2D::bind(GLuint unit) const {
@@ -143,7 +143,7 @@ GLuint Texture2D::id() const {
     return m_texture_id;
 }
 
-bool Texture2D::load_default_texture() {
+void Texture2D::load_default_texture() {
     auto texture_config = Texture2DConfig();
 
     const int width = 2;
@@ -170,6 +170,4 @@ bool Texture2D::load_default_texture() {
 
     glGenerateMipmap(GL_TEXTURE_2D);
     unbind();
-
-    return true;
 }

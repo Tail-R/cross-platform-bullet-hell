@@ -8,10 +8,7 @@
 
 class Shader {
 public:
-    Shader(
-        std::string_view vertex_shader_path,
-        std::string_view fragment_shader_path
-    );
+    Shader();
     ~Shader();
 
     // Delete copy constructor and copy assignment operator
@@ -21,6 +18,13 @@ public:
     // Delete move constructor and move assignment operator
     Shader(Shader&&) = delete;
     Shader& operator=(Shader&&) = delete;
+
+    void load_from_file(
+        std::string_view vertex_shader_path,
+        std::string_view fragment_shader_path
+    );
+
+    void load_default_shader();
 
     void use() const;
     GLuint id() const;
@@ -39,4 +43,6 @@ private:
     std::optional<GLuint> try_compile_shader(GLenum shader_type, std::string_view shader_code) const;
 
     GLuint m_program_id;
+
+    void delete_program();
 };

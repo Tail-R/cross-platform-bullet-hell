@@ -20,7 +20,12 @@ std::shared_ptr<Shader> ShaderFactory::get_shader(const std::string& shader_path
     std::cerr << "[ShaderFactory] Warning: Shader not preloaded: " << shader_path << "\n";
     
     // Fallback Shader created
-    return std::make_shared<Shader>();
+    auto default_shader_ptr = std::make_shared<Shader>();
+    default_shader_ptr->load_default_shader();
+
+    m_shader_cache[shader_path] = default_shader_ptr;
+
+    return default_shader_ptr;
 }
 
 void ShaderFactory::load_shader(const std::string& shader_path) {
@@ -37,7 +42,10 @@ void ShaderFactory::load_shader(const std::string& shader_path) {
                   << ": " << e.what() << "\n";
 
         // Fallback Shader created
-        m_shader_cache[shader_path] = std::make_shared<Shader>();
+        auto default_shader_ptr = std::make_shared<Shader>();
+        default_shader_ptr->load_default_shader();
+
+        m_shader_cache[shader_path] = default_shader_ptr;
 
         return;
     }
@@ -52,7 +60,10 @@ void ShaderFactory::load_shader(const std::string& shader_path) {
                   << shader_path << "\n";
 
         // Fallback Shader created
-        m_shader_cache[shader_path] = std::make_shared<Shader>();
+        auto default_shader_ptr = std::make_shared<Shader>();
+        default_shader_ptr->load_default_shader();
+
+        m_shader_cache[shader_path] = default_shader_ptr;
 
         return;
     }
@@ -65,10 +76,14 @@ void ShaderFactory::load_shader(const std::string& shader_path) {
         general_constants::ASSETS_DIR
     ) + fragment_rel;
 
-    m_shader_cache[shader_path] = std::make_shared<Shader>(
+    auto shader_ptr = std::make_shared<Shader>();
+
+    shader_ptr->load_from_file(
         vertex_shader_path,
         fragment_shader_path
     );
+
+    m_shader_cache[shader_path] = shader_ptr;
 }
 
 void ShaderFactory::clear_cache() {

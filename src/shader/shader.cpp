@@ -78,10 +78,22 @@ namespace {
     }
 }
 
-Shader::Shader(
+Shader::Shader()
+    : m_program_id(0)
+{}
+
+Shader::~Shader() {
+    delete_program();
+}
+
+void Shader::load_from_file(
     std::string_view vertex_shader_path,
     std::string_view fragment_shader_path
 ) {
+    delete_program();
+
+    m_program_id = glCreateProgram();
+
     // Attempt to load shader source files (fallbacks used if failed)
     auto vertex_shader_code = try_load_shader_source(vertex_shader_path)
         .value_or(std::string(default_vertex_shader));
@@ -116,7 +128,6 @@ Shader::Shader(
     auto fragment_shader = fragment_shader_opt.value();
 
     // Linking shaders
-    m_program_id = glCreateProgram();
     glAttachShader(m_program_id, vertex_shader);
     glAttachShader(m_program_id, fragment_shader);
     glLinkProgram(m_program_id);
@@ -138,8 +149,42 @@ Shader::Shader(
     glDeleteShader(fragment_shader);
 }
 
-Shader::~Shader() {
-    glDeleteProgram(m_program_id);
+void Shader::load_default_shader() {
+    delete_program();
+
+    auto vertex_shader_opt = try_compile_shader(GL_VERTEX_SHADER, default_vertex_shader);
+    auto fragment_shader_opt = try_compile_shader(GL_FRAGMENT_SHADER, default_fragment_shader);
+
+    if (!vertex_shader_opt || !fragment_shader_opt)
+    {
+        throw std::runtime_error("Error while compiling GLSL shader");
+    }
+
+    // Unwrapping
+    auto vertex_shader = vertex_shader_opt.value();
+    auto fragment_shader = fragment_shader_opt.value();
+
+    // Linking shaders
+    m_program_id = glCreateProgram();
+    glAttachShader(m_program_id, vertex_shader);
+    glAttachShader(m_program_id, fragment_shader);
+    glLinkProgram(m_program_id);
+
+    auto link_status = check_link_status(m_program_id);
+
+    // Verify linking result and log any errors
+    if (!link_status.success)
+    {
+        if (link_status.info_log.has_value())
+        {
+            std::cerr << link_status.info_log.value() << "\n";
+        }
+
+        throw std::runtime_error("Error while linking GLSL shaders");
+    }
+
+    glDeleteShader(vertex_shader);
+    glDeleteShader(fragment_shader);
 }
 
 void Shader::use() const {
@@ -249,4 +294,12 @@ std::optional<GLuint> Shader::try_compile_shader(GLenum shader_type, std::string
     }
 
     return shader;
+}
+
+void Shader::delete_program() {
+    if (m_program_id != 0)
+    {
+        glDeleteProgram(m_program_id);
+        m_program_id = 0;
+    }
 }

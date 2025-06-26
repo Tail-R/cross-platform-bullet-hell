@@ -28,18 +28,11 @@ bool TextureFactory::load_texture(
 ) {
     auto texture_ptr = std::make_shared<Texture2D>();
 
-    const auto load_result = texture_ptr->load_from_file(
+    texture_ptr->load_from_file(
         texture_path,
         texture_config
     );
-
-    if (!load_result)
-    {
-        std::cerr << "Failed to load texture: " << texture_path << "\n";
-
-        return false;
-    }
-
+    
     m_texture_cache[texture_path] = texture_ptr;
 
     return true;

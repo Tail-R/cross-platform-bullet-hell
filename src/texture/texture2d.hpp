@@ -24,10 +24,13 @@ public:
     Texture2D(Texture2D&&) noexcept;
     Texture2D& operator=(Texture2D&&) noexcept;
 
-    bool load_from_file(
+    void load_from_file(
         std::string_view image_path,
         const Texture2DConfig& texture_config = Texture2DConfig()
     );
+
+    // A function to fall back to the default texture if loading fails
+    void load_default_texture();
 
     void bind(GLuint unit = 0) const;
     void unbind() const;
@@ -40,7 +43,4 @@ private:
     GLuint  m_texture_id;
     int     m_texture_width;
     int     m_texture_height;
-
-    // A function to fall back to the default texture if loading fails
-    bool load_default_texture();
 };
