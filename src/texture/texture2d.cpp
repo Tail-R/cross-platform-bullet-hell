@@ -19,6 +19,36 @@ Texture2D::~Texture2D() {
     }
 }
 
+Texture2D::Texture2D(Texture2D&& other) noexcept
+    : m_texture_id(other.m_texture_id)
+    , m_texture_width(other.m_texture_width)
+    , m_texture_height(other.m_texture_height)
+{
+    other.m_texture_id = 0;
+    other.m_texture_width = 0;
+    other.m_texture_height = 0;
+}
+
+Texture2D& Texture2D::operator=(Texture2D&& other) noexcept {
+    if (this != &other)
+    {
+        if (m_texture_id != 0)
+        {
+            glDeleteTextures(1, &m_texture_id);
+        }
+
+        m_texture_id = other.m_texture_id;
+        m_texture_width = other.m_texture_width;
+        m_texture_height = other.m_texture_height;
+
+        other.m_texture_id = 0;
+        other.m_texture_width = 0;
+        other.m_texture_height = 0;
+    }
+
+    return *this;
+}
+
 bool Texture2D::load_from_file(
     std::string_view image_path,
     const Texture2DConfig& texture_config
@@ -49,8 +79,9 @@ bool Texture2D::load_from_file(
     {
         std::cerr << "Failed to load texture: " << image_path << "\n";
         std::cerr << "stb_image error: " << stbi_failure_reason() << "\n";
+        std::cerr << "Falling back to the default texture" << "\n";
 
-        return false;
+        return load_default_texture();
     }
 
     GLenum format = (channels == 4) ? GL_RGBA :
@@ -110,4 +141,35 @@ int Texture2D::height() const {
 
 GLuint Texture2D::id() const {
     return m_texture_id;
+}
+
+bool Texture2D::load_default_texture() {
+    auto texture_config = Texture2DConfig();
+
+    const int width = 2;
+    const int height = 2;
+
+    // RGBA: black and magenta
+    const unsigned char pixels[] = {
+        // black            magenta
+        0,   0,   0,   255, 255, 0,  255, 255,
+        // magenta          black
+        255, 0,   255, 255, 0,   0,  0,   255
+    };
+    
+    m_texture_width = width;
+    m_texture_height = height;
+
+    glBindTexture(GL_TEXTURE_2D, m_texture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, texture_config.wrap_s);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, texture_config.wrap_t);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texture_config.min_filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texture_config.mag_filter);
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+    unbind();
+
+    return true;
 }
