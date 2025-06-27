@@ -108,13 +108,13 @@ void Shader::load_from_file(
     // Fallback to default shader source if compilation fails
     if (!vertex_shader_opt.has_value())
     {
-        std::cerr << "Falling back to default vertex shader" << "\n";
+        std::cerr << "[Shader] Falling back to default vertex shader" << "\n";
         vertex_shader_opt = try_compile_shader(GL_VERTEX_SHADER, default_vertex_shader);
     }
 
     if (!fragment_shader_opt.has_value())
     {
-        std::cerr << "Falling back to default fragment shader" << "\n";
+        std::cerr << "[Shader] Falling back to default fragment shader" << "\n";
         fragment_shader_opt = try_compile_shader(GL_FRAGMENT_SHADER, default_fragment_shader);
     }
 
@@ -139,10 +139,10 @@ void Shader::load_from_file(
     {
         if (link_status.info_log.has_value())
         {
-            std::cerr << link_status.info_log.value() << "\n";
+            std::cerr << "[Shader] " << link_status.info_log.value() << "\n";
         }
 
-        throw std::runtime_error("Error while linking GLSL shaders");
+        throw std::runtime_error("[Shader] Error while linking GLSL shaders");
     }
 
     glDeleteShader(vertex_shader);
@@ -157,7 +157,7 @@ void Shader::load_default_shader() {
 
     if (!vertex_shader_opt || !fragment_shader_opt)
     {
-        throw std::runtime_error("Error while compiling GLSL shader");
+        throw std::runtime_error("[Shader] Error while compiling GLSL shader");
     }
 
     // Unwrapping
@@ -177,10 +177,10 @@ void Shader::load_default_shader() {
     {
         if (link_status.info_log.has_value())
         {
-            std::cerr << link_status.info_log.value() << "\n";
+            std::cerr << "[Shader] " << link_status.info_log.value() << "\n";
         }
 
-        throw std::runtime_error("Error while linking GLSL shaders");
+        throw std::runtime_error("[Shader] Error while linking GLSL shaders");
     }
 
     glDeleteShader(vertex_shader);
@@ -255,7 +255,7 @@ std::optional<std::string> Shader::try_load_shader_source(std::string_view shade
 
     if (!file.is_open())
     {
-        std::cerr << "Failed to load shader file: " << shader_path << "\n";
+        std::cerr << "[Shader] Failed to load shader file: " << shader_path << "\n";
 
         return std::nullopt;
     }
@@ -281,11 +281,11 @@ std::optional<GLuint> Shader::try_compile_shader(GLenum shader_type, std::string
             shader_type == GL_VERTEX_SHADER ? "vertex" : 
             shader_type == GL_FRAGMENT_SHADER ? "fragment" : "unknown";
 
-        std::cerr << "Failed to compile " << shader_type_str << " shader: ";
+        std::cerr << "[Shader] Failed to compile " << shader_type_str << " shader: ";
 
         if (compile_status.info_log.has_value())
         {
-            std::cerr << compile_status.info_log.value();
+            std::cerr << "[Shader] " << compile_status.info_log.value();
         }
 
         std::cerr << "\n";

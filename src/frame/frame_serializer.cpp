@@ -23,8 +23,8 @@ std::optional<std::vector<std::byte>> serialize_frame(const FrameSnapshot& frame
     if (player_count_validation || enemy_count_validation || boss_count_validation ||
         bullet_count_validation || item_count_validation)
     {
-        std::cerr << "Failed to serialize frame" << "\n";
-        std::cerr << "The number of objects and the size of objects does not match" << "\n";
+        std::cerr << "[serialize_frame] Failed to serialize frame" << "\n";
+        std::cerr << "[serialize_frame] The number of objects and the size of objects does not match" << "\n";
         
         return std::nullopt;
     }

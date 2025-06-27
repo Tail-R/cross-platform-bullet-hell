@@ -30,6 +30,9 @@ namespace socket_constants {
     constexpr uint32_t          SERVER_MAX_PACKET_SIZE  = 10 * 1024 * 1024; // 10MB
 }
 
-namespace shader_constants {
-    constexpr std::string_view  SHADER_DIR = PROJECT_ROOT_DIR "/assets/glsl";
+namespace assets_constants {
+    constexpr std::string_view  CHARACTER_DIR   = PROJECT_ROOT_DIR "/assets/character";
+    constexpr std::string_view  SHADER_DIR      = PROJECT_ROOT_DIR "/assets/glsl";
+    constexpr std::string_view  MESH_DIR        = PROJECT_ROOT_DIR "/assets/mesh";
+    constexpr std::string_view  TEXTURE_DIR     = PROJECT_ROOT_DIR "/assets/texture";
 }

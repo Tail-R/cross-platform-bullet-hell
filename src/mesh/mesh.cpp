@@ -18,21 +18,21 @@ Mesh::Mesh(
 
     if (m_vao == 0)
     {
-        std::cerr << "Failed to generate VAO!" << "\n";
+        std::cerr << "[Mesh] Failed to generate VAO!" << "\n";
     }
 
     glGenBuffers(1, &m_vbo);
 
     if (m_vbo == 0)
     {
-        std::cerr << "Failed to generate VBO!" << "\n";
+        std::cerr << "[Mesh] Failed to generate VBO!" << "\n";
     }
 
     glGenBuffers(1, &m_ebo);
 
     if (m_ebo == 0)
     {
-        std::cerr << "Failed to generate EBO!" << "\n";
+        std::cerr << "[Mesh] Failed to generate EBO!" << "\n";
     }
 
     glBindVertexArray(m_vao);

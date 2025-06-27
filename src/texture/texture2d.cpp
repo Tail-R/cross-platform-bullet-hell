@@ -56,7 +56,7 @@ void Texture2D::load_from_file(
 
     if (m_texture_id == 0)
     {
-        std::cerr << "Texture ID not set" << "\n";
+        std::cerr << "[Texture2D] Texture ID not set" << "\n";
 
         glGenTextures(1, &m_texture_id);
     }
@@ -77,9 +77,9 @@ void Texture2D::load_from_file(
 
     if (image_data == nullptr)
     {
-        std::cerr << "Failed to load texture: " << image_path << "\n";
-        std::cerr << "stb_image error: " << stbi_failure_reason() << "\n";
-        std::cerr << "Falling back to the default texture" << "\n";
+        std::cerr << "[Texture2D] Failed to load texture: " << image_path << "\n";
+        std::cerr << "[Texture2D] stb_image error: " << stbi_failure_reason() << "\n";
+        std::cerr << "[Texture2D] Falling back to the default texture" << "\n";
 
         load_default_texture();
 

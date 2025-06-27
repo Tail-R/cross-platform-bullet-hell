@@ -3,10 +3,7 @@
 #include "shader_factory.hpp"
 #include "../config_constants.hpp"
 
-ShaderFactory::ShaderFactory() {
-    clear_cache();
-}
-
+ShaderFactory::ShaderFactory() = default;
 ShaderFactory::~ShaderFactory() = default;
 
 std::shared_ptr<Shader> ShaderFactory::get_shader(const std::string& shader_path) {

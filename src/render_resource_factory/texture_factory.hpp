@@ -14,8 +14,7 @@ public:
         const std::string& texture_path
     );
 
-    // Loads the texture from file. Returns true on success, false on failure.
-    bool load_texture(
+    void load_texture(
         const std::string& texture_path,
         Texture2DConfig texture_config = Texture2DConfig()
     );

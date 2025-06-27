@@ -1,9 +1,0 @@
-{
-    "id": "demo",
-    "mesh": "builtin:quad",
-    "texture": "images/zunmon_3002.png",
-    "shaders": {
-        "vertex": "glsl/vertex/vertex.glsl",
-        "fragment": "glsl/fragment/fragment.glsl"
-    }
-}

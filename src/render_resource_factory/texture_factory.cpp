@@ -1,10 +1,7 @@
 #include <iostream>
 #include "texture_factory.hpp"
 
-TextureFactory::TextureFactory() {
-    clear_cache();
-}
-
+TextureFactory::TextureFactory() = default;
 TextureFactory::~TextureFactory() = default;
 
 std::shared_ptr<Texture2D> TextureFactory::get_texture(
@@ -17,15 +14,25 @@ std::shared_ptr<Texture2D> TextureFactory::get_texture(
         return it->second;
     }
 
-    std::cerr << "Failed to retrieve texture: " << texture_path << "\n";
+    std::cerr << "[TextureFactory] Failed to retrieve texture: " << texture_path << "\n";
 
-    return nullptr;
+    auto default_texture = std::make_shared<Texture2D>();
+    default_texture->load_default_texture();
+
+    m_texture_cache[texture_path] = default_texture;
+
+    return default_texture;
 }
 
-bool TextureFactory::load_texture(
+void TextureFactory::load_texture(
     const std::string& texture_path,
     Texture2DConfig texture_config
 ) {
+    if (m_texture_cache.find(texture_path) != m_texture_cache.end())
+    {
+        return;
+    }
+
     auto texture_ptr = std::make_shared<Texture2D>();
 
     texture_ptr->load_from_file(
@@ -34,8 +41,6 @@ bool TextureFactory::load_texture(
     );
     
     m_texture_cache[texture_path] = texture_ptr;
-
-    return true;
 }
 
 void TextureFactory::clear_cache() {
