@@ -4,14 +4,14 @@
 Mesh::Mesh(
     const std::vector<GLfloat>& vertices,
     const std::vector<GLuint>& indices,
-    const std::vector<GLsizei>& attribute_sizes)
+    const std::vector<VertexAttribute>& attributes)
     : m_index_count(static_cast<GLsizei>(indices.size())) {
     
     GLsizei vertex_size = 0;
 
-    for (auto size : attribute_sizes)
+    for (auto attr : attributes)
     {
-        vertex_size += size;
+        vertex_size += attr.size;
     }
 
     glGenVertexArrays(1, &m_vao);
@@ -49,20 +49,20 @@ Mesh::Mesh(
     GLsizei offset = 0;
     GLsizei stride = vertex_size * sizeof(GLfloat);
 
-    for (GLsizei i = 0; i < static_cast<GLsizei>(attribute_sizes.size()); i++)
+    for (GLsizei i = 0; i < static_cast<GLsizei>(attributes.size()); i++)
     {
         glEnableVertexAttribArray(i);
 
         glVertexAttribPointer(
             i,                                  // Index of the attribute
-            attribute_sizes[i],                 // Size
+            attributes[i].size,                 // Size
             GL_FLOAT,                           // Type
             GL_FALSE,                           // Normalized
             stride,                             // Stride
             reinterpret_cast<void*>(static_cast<uintptr_t>(offset * sizeof(GLfloat)))   // Offset to the start
         );
 
-        offset += attribute_sizes[i];
+        offset += attributes[i].size;
     }
 
     glBindVertexArray(0);

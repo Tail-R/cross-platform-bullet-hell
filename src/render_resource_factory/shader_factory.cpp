@@ -14,7 +14,7 @@ std::shared_ptr<Shader> ShaderFactory::get_shader(const std::string& shader_path
         return it->second;
     }
 
-    std::cerr << "[ShaderFactory] Warning: Shader not preloaded: " << shader_path << "\n";
+    std::cerr << "[ShaderFactory] Shader not preloaded: " << shader_path << "\n";
     
     // Fallback Shader created
     auto default_shader_ptr = std::make_shared<Shader>();
@@ -30,13 +30,34 @@ void ShaderFactory::load_shader(const std::string& shader_path) {
     sol::state lua;
     lua.open_libraries(sol::lib::base);
 
-    sol::table shader_lua;
+    // Try to load Lua file
+    sol::object load_result;
 
     try {
-        shader_lua = lua.script_file(shader_path);
+        load_result = lua.script_file(shader_path);
     } catch (const sol::error& e) {
         std::cerr << "[ShaderFactory] Lua error while loading " << shader_path
                   << ": " << e.what() << "\n";
+
+        // Fallback Shader created
+        auto default_shader_ptr = std::make_shared<Shader>();
+        default_shader_ptr->load_default_shader();
+
+        m_shader_cache[shader_path] = default_shader_ptr;
+
+        return;
+    }
+
+    // Check the value type
+    sol::table shader_lua;
+
+    if (load_result.is<sol::table>())
+    {
+        shader_lua = load_result.as<sol::table>();
+    }
+    else
+    {
+        std::cerr << "[ShaderFactory] " << shader_path << " did not return a table" << "\n";
 
         // Fallback Shader created
         auto default_shader_ptr = std::make_shared<Shader>();

@@ -32,7 +32,7 @@ namespace socket_constants {
 
 namespace assets_constants {
     constexpr std::string_view  CHARACTER_DIR   = PROJECT_ROOT_DIR "/assets/character";
-    constexpr std::string_view  SHADER_DIR      = PROJECT_ROOT_DIR "/assets/glsl";
+    constexpr std::string_view  SHADER_DIR      = PROJECT_ROOT_DIR "/assets/shader";
     constexpr std::string_view  MESH_DIR        = PROJECT_ROOT_DIR "/assets/mesh";
     constexpr std::string_view  TEXTURE_DIR     = PROJECT_ROOT_DIR "/assets/texture";
 }

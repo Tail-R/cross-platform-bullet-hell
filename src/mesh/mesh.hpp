@@ -3,14 +3,17 @@
 #include <vector>
 #include <glad/glad.h>
 
+struct VertexAttribute {
+    std::string name;
+    size_t size;
+};
+
 class Mesh {
 public:
     Mesh(
         const std::vector<GLfloat>& vertices,
         const std::vector<GLuint>& indices,
-
-        // e.g., position (vec3), texcoord (vec2) => attribute_sizes = {3, 2}
-        const std::vector<GLsizei>& attribute_sizes
+        const std::vector<VertexAttribute>& attributes
     );
 
     ~Mesh();

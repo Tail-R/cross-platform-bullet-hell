@@ -16,5 +16,5 @@ public:
     void clear_cache();
 
 private:
-    std::unordered_map<std::string, std::shared_ptr<Mesh>> m_shader_cache;
+    std::unordered_map<std::string, std::shared_ptr<Mesh>> m_mesh_cache;
 };
