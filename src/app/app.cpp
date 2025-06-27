@@ -5,6 +5,10 @@
 #include "../logger/logger.hpp"
 #include "../input_manager/input_manager.hpp"
 
+#include "../render_resource_factory/mesh_factory.hpp"
+#include "../render_resource_factory/shader_factory.hpp"
+#include "../render_resource_factory/texture_factory.hpp"
+
 App::App()
     : m_sdl_window(nullptr)
     , m_sdl_gl_context(nullptr)
@@ -30,23 +34,38 @@ AppResult App::run() {
 
     bool quit = false;
 
+    auto mf = MeshFactory();
+    auto sf = ShaderFactory();
+    auto tf = TextureFactory();
+
+    const auto mesh_path     = std::string(assets_constants::MESH_DIR)       + "/square.lua";
+    const auto shader_path   = std::string(assets_constants::SHADER_DIR)     + "/green_aura.lua";
+    const auto texture_path  = std::string(assets_constants::TEXTURE_DIR)    + "/zunmon_3002.png";
+
+    mf.load_mesh(mesh_path);
+    sf.load_shader(shader_path);
+    tf.load_texture(texture_path);
+
     show_window();
 
     while (!quit)
     {
         input_manager.collect_input_events();
+        if (input_manager.get_quit_request()) { quit = true; }
 
         auto game_input = input_manager.get_game_input();
+        if (game_input.pressed.test(static_cast<size_t>(GameAction::Shoot))) { std::cout << "Confirm pressed" << "\n"; }
 
-        if (game_input.pressed.test(static_cast<size_t>(GameAction::Shoot)))
-        {
-            std::cout << "Confirm pressed" << "\n";
-        }
+        auto mesh = mf.get_mesh(mesh_path);
+        auto shader = sf.get_shader(shader_path);
+        auto texture = tf.get_texture(texture_path);
 
-        if (input_manager.get_quit_request())
-        {
-            quit = true;
-        }
+        shader->use();
+        texture->bind();
+        mesh->bind();
+        mesh->draw();
+
+        SDL_GL_SwapWindow(m_sdl_window);
     }
 
     hide_window();

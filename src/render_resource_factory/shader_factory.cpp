@@ -87,12 +87,12 @@ void ShaderFactory::load_shader(const std::string& shader_path) {
     }
 
     const auto vertex_shader_path = std::string(
-        general_constants::ASSETS_DIR
-    ) + vertex_rel;
+        assets_constants::SHADER_DIR
+    ) + "/" + vertex_rel;
 
     const auto fragment_shader_path = std::string(
-        general_constants::ASSETS_DIR
-    ) + fragment_rel;
+        assets_constants::SHADER_DIR
+    ) + "/" + fragment_rel;
 
     auto shader_ptr = std::make_shared<Shader>();
 
