@@ -5,9 +5,9 @@
 #include "../logger/logger.hpp"
 #include "../input_manager/input_manager.hpp"
 
-#include "../render_resource_factory/mesh_factory.hpp"
-#include "../render_resource_factory/shader_factory.hpp"
-#include "../render_resource_factory/texture_factory.hpp"
+#include "../assets_factory/mesh_factory.hpp"
+#include "../assets_factory/shader_factory.hpp"
+#include "../assets_factory/texture_factory.hpp"
 
 App::App()
     : m_sdl_window(nullptr)
@@ -46,21 +46,46 @@ AppResult App::run() {
     sf.load_shader(shader_path);
     tf.load_texture(texture_path);
 
+    float x_offset = 0.0;
+    float y_offset = 0.0;
+    float speed = 2.0f;
+    Uint64 now = SDL_GetPerformanceCounter();
+    Uint64 last = 0;
+    float total_time = 0.0;
+
     show_window();
 
     while (!quit)
     {
+        last = now;
+        now = SDL_GetPerformanceCounter();
+        float delta_time = (now - last) / (float)SDL_GetPerformanceFrequency();
+        total_time += delta_time;
+
+        glClear(GL_COLOR_BUFFER_BIT);
+
         input_manager.collect_input_events();
         if (input_manager.get_quit_request()) { quit = true; }
 
         auto game_input = input_manager.get_game_input();
-        if (game_input.pressed.test(static_cast<size_t>(GameAction::Shoot))) { std::cout << "Confirm pressed" << "\n"; }
+        if (game_input.pressed.test(static_cast<size_t>(GameAction::Shoot))) { quit = true; }
+
+        if (game_input.direction == InputDirection::Up)      { y_offset += speed * delta_time; }
+        if (game_input.direction == InputDirection::Right)   { x_offset += speed * delta_time; }
+        if (game_input.direction == InputDirection::Down)    { y_offset -= speed * delta_time; }
+        if (game_input.direction == InputDirection::Left)    { x_offset -= speed * delta_time; }
 
         auto mesh = mf.get_mesh(mesh_path);
         auto shader = sf.get_shader(shader_path);
         auto texture = tf.get_texture(texture_path);
 
+        const auto texture_width = texture->width();
+        const auto texture_height = texture->height();
+
         shader->use();
+        shader->set_float("time", total_time);
+        shader->set_vec2("offset", glm::vec2(x_offset, y_offset));
+
         texture->bind();
         mesh->bind();
         mesh->draw();

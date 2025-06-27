@@ -8,10 +8,12 @@ int main(int argc, char* args[]) {
     static_cast<void>(argc);
     static_cast<void>(args);
 
+    App         app;
     SDLConfig   sdl_config;
     GLConfig    gl_config;
 
-    App         app;
+    sdl_config.window_width     = 400;
+    sdl_config.window_height    = 600;
 
     if (!app.initialize(sdl_config, gl_config))
     {

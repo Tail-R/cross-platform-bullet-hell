@@ -36,9 +36,9 @@ set(SRC_FILES
     ${SRC_DIR}/shader/shader.cpp
     ${SRC_DIR}/texture/texture2d.cpp
     ${SRC_DIR}/renderer/renderer.cpp
-    ${SRC_DIR}/render_resource_factory/mesh_factory.cpp
-    ${SRC_DIR}/render_resource_factory/shader_factory.cpp
-    ${SRC_DIR}/render_resource_factory/texture_factory.cpp
+    ${SRC_DIR}/assets_factory/mesh_factory.cpp
+    ${SRC_DIR}/assets_factory/shader_factory.cpp
+    ${SRC_DIR}/assets_factory/texture_factory.cpp
 
     # Utilities
     ${SRC_DIR}/logger/logger.cpp
