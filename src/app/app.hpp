@@ -10,8 +10,8 @@ struct SDLConfig {
     std::string     window_name                 = "My first app! uwu";
     int             window_pos_x                = SDL_WINDOWPOS_UNDEFINED;
     int             window_pos_y                = SDL_WINDOWPOS_UNDEFINED;
-    int             window_width                = 600;
-    int             window_height               = 400;
+    int             window_width                = 800;
+    int             window_height               = 600;
     int             window_flags                = SDL_WINDOW_HIDDEN | SDL_WINDOW_OPENGL;
     int             window_fps                  = 60;
 };
@@ -48,7 +48,11 @@ public:
     App();
     ~App();
 
-    bool initialize(const SDLConfig& app_config, const GLConfig& gl_config);
+    bool initialize(
+        const SDLConfig& sdl_config = SDLConfig(),
+        const GLConfig& gl_config = GLConfig()
+    );
+
     void cleanup();
 
     AppResult run();

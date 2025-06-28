@@ -31,6 +31,7 @@ namespace render_constants {
 }
 
 namespace socket_constants {
+    constexpr std::string_view  LOOPBACK_ADDR           = "127.0.0.1";      
     constexpr std::string_view  SERVER_ADDR             = "150.42.11.6";
     constexpr uint16_t          SERVER_PORT             = 6198;
     constexpr uint32_t          SERVER_MAGIC_NUMBER     = 0x7F3B29D1;

@@ -32,6 +32,11 @@ AppResult App::run() {
     AppResult app_result;
     InputManager input_manager;
 
+    // Set viewport as display size
+    SDL_DisplayMode disp_mode;
+    SDL_GetCurrentDisplayMode(0, &disp_mode);
+    glViewport(0, 0, disp_mode.w, disp_mode.h);
+
     bool quit = false;
 
     auto mf = MeshFactory();
@@ -105,10 +110,10 @@ bool App::initialize(const SDLConfig& sdl_config, const GLConfig& gl_config) {
     return m_sdl_initialized && m_sdl_gl_initialized;
 }
 
-bool App::init_sdl(const SDLConfig& app_config) {
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, app_config.gl_context_major_version);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, app_config.gl_context_minor_version);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, app_config.gl_context_profile);
+bool App::init_sdl(const SDLConfig& sdl_config) {
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, sdl_config.gl_context_major_version);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, sdl_config.gl_context_minor_version);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, sdl_config.gl_context_profile);
     
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -122,12 +127,12 @@ bool App::init_sdl(const SDLConfig& app_config) {
 
     // Create window
     m_sdl_window = SDL_CreateWindow(
-        app_config.window_name.data(),
-        app_config.window_pos_x,
-        app_config.window_pos_y,
-        app_config.window_width,
-        app_config.window_height,
-        app_config.window_flags
+        sdl_config.window_name.data(),
+        sdl_config.window_pos_x,
+        sdl_config.window_pos_y,
+        sdl_config.window_width,
+        sdl_config.window_height,
+        sdl_config.window_flags
     );
 
     if (m_sdl_window == nullptr)
