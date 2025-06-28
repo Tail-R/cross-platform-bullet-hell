@@ -12,13 +12,13 @@ std::string frame_to_json_str(const FrameSnapshot& frame) {
         Convert FrameSnapshot attributes into json string
     */
     oss << "\"frame\":{"
-        << "\"client_id\":"     << static_cast<float>(frame.client_id)    << ","
-        << "\"opponent_id\":"   << static_cast<float>(frame.opponent_id)  << ","
-        << "\"mode\":"          << static_cast<float>(frame.mode)         << ","
-        << "\"state\":"         << static_cast<float>(frame.state)        << ","
-        << "\"timestamp\":"     << static_cast<float>(frame.timestamp)    << ","
-        << "\"score\":"         << static_cast<float>(frame.score)        << ","
-        << "\"difficulty\":"    << static_cast<float>(frame.difficulty)
+        << "\"client_id\":"     << static_cast<float>(frame.client_id)      << ","
+        << "\"opponent_id\":"   << static_cast<float>(frame.opponent_id)    << ","
+        << "\"timestamp\":"     << static_cast<float>(frame.timestamp)      << ","
+        << "\"score\":"         << static_cast<float>(frame.score)          << ","
+        << "\"mode\":"          << static_cast<float>(frame.mode)           << ","
+        << "\"difficulty\":"    << static_cast<float>(frame.difficulty)     << ","
+        << "\"state\":"         << static_cast<float>(frame.state)
         << "}"
         << ",";
 

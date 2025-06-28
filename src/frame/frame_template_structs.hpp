@@ -158,18 +158,16 @@ static_assert(sizeof(ItemSnapshot) == ITEM_OBJECT_SIZE);
     Frame snapshot
 */
 struct FrameSnapshot {
-    uint8_t     client_id;
-    uint8_t     opponent_id;
-    uint8_t     mode;
-    uint8_t     state;
-
+    uint32_t    client_id;
+    uint32_t    opponent_id;
     uint32_t    timestamp;
     uint32_t    score;
 
+    uint8_t     mode;
     uint8_t     difficulty;
+    uint8_t     state;
+
     uint8_t     reserved_01;    // Reserved area
-    uint8_t     reserved_02;    // Reserved area
-    uint8_t     reserved_03;    // Reserved area
 
     /***** 16 bytes total *****/
 
@@ -197,4 +195,4 @@ struct FrameSnapshot {
     std::vector<ItemSnapshot>       item_vector;
 };
 
-constexpr size_t FRAME_OBJECT_FIXED_HEADER_SIZE = 16;
+constexpr size_t FRAME_OBJECT_FIXED_HEADER_SIZE = 20;

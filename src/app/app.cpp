@@ -75,10 +75,14 @@ AppResult App::run() {
         auto game_input = input_manager.get_game_input();
         if (game_input.pressed.test(static_cast<size_t>(GameAction::Shoot))) { quit = true; }
 
-        if (game_input.direction == InputDirection::Up)      { y_offset += speed * delta_time; }
-        if (game_input.direction == InputDirection::Right)   { x_offset += speed * delta_time; }
-        if (game_input.direction == InputDirection::Down)    { y_offset -= speed * delta_time; }
-        if (game_input.direction == InputDirection::Left)    { x_offset -= speed * delta_time; }
+        if (game_input.direction == InputDirection::Up)         { y_offset += speed * delta_time; }
+        if (game_input.direction == InputDirection::Right)      { x_offset += speed * delta_time; }
+        if (game_input.direction == InputDirection::Down)       { y_offset -= speed * delta_time; }
+        if (game_input.direction == InputDirection::Left)       { x_offset -= speed * delta_time; }
+        if (game_input.direction == InputDirection::UpRight)    { x_offset += speed * delta_time; y_offset += speed * delta_time; }
+        if (game_input.direction == InputDirection::UpLeft)     { x_offset -= speed * delta_time; y_offset += speed * delta_time; }
+        if (game_input.direction == InputDirection::DownRight)  { x_offset += speed * delta_time; y_offset -= speed * delta_time; }
+        if (game_input.direction == InputDirection::DownLeft)   { x_offset -= speed * delta_time; y_offset -= speed * delta_time; }
 
         auto mesh = mf.get_mesh(mesh_path);
         auto shader = sf.get_shader(shader_path);

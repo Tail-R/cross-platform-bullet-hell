@@ -159,15 +159,12 @@ std::optional<FrameSnapshot> deserialize_frame(const std::vector<std::byte>& byt
     // Copy the fixed area of the frame object
     bytes_offset = copy_bytes_to_t(&frame.client_id,    bytes_offset);
     bytes_offset = copy_bytes_to_t(&frame.opponent_id,  bytes_offset);
-    bytes_offset = copy_bytes_to_t(&frame.mode,         bytes_offset);
-    bytes_offset = copy_bytes_to_t(&frame.state,        bytes_offset);
     bytes_offset = copy_bytes_to_t(&frame.timestamp,    bytes_offset);
     bytes_offset = copy_bytes_to_t(&frame.score,        bytes_offset);
+    bytes_offset = copy_bytes_to_t(&frame.mode,         bytes_offset);
     bytes_offset = copy_bytes_to_t(&frame.difficulty,   bytes_offset);
+    bytes_offset = copy_bytes_to_t(&frame.state,        bytes_offset);
     bytes_offset = copy_bytes_to_t(&frame.reserved_01,  bytes_offset);
-    bytes_offset = copy_bytes_to_t(&frame.reserved_02,  bytes_offset);
-    bytes_offset = copy_bytes_to_t(&frame.reserved_03,  bytes_offset);
-
     // Copy the stage object
     bytes_offset = copy_bytes_to_t(&frame.stage, bytes_offset);
 
