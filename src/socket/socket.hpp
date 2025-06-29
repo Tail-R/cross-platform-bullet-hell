@@ -48,6 +48,7 @@ public:
     ClientSocket& operator=(const ClientSocket&) = delete;
 
     bool connect_to_server();
+    void abort();
     void disconnect();
 
     ssize_t send_data(const std::vector<std::byte>& data);

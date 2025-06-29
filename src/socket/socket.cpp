@@ -58,13 +58,13 @@ namespace {
         while (buffer.size() < size)
         {
             // Temporary buffer
-            std::array<std::byte, TEMP_BUFFER_SIZE> temp;
+            std::array<std::byte, TEMP_BUFFER_SIZE> temp_buffer;
 
             // Calclate the remaining size
             size_t remaining = size - buffer.size();
-            size_t to_read = std::min(temp.size(), remaining);
+            size_t to_read = std::min(temp_buffer.size(), remaining);
 
-            ssize_t received = socket_recv(sock, temp.data(), to_read);
+            ssize_t received = socket_recv(sock, temp_buffer.data(), to_read);
 
             if (received == 0)
             // Graceful shutdown
@@ -76,7 +76,11 @@ namespace {
                 return std::nullopt;
             }
 
-            buffer.insert(buffer.end(), temp.begin(), temp.begin() + received);
+            buffer.insert(
+                buffer.end(),
+                temp_buffer.begin(),
+                temp_buffer.begin() + received
+            );
         }
 
         return buffer;
@@ -175,6 +179,14 @@ bool ClientSocket::connect_to_server() {
     m_server_connected = true;
 
     return true;
+}
+
+void ClientSocket::abort() {
+    /*
+        At this point recv returns 0 on both Windows and Linux (POSIX)
+        The 2 means to stop both reading and writing
+    */
+    shutdown(m_server_sock, 2);
 }
 
 void ClientSocket::disconnect() {

@@ -4,15 +4,36 @@
 #include <cstdint>
 #include <cstddef>
 
+// A Magic number to synchronize the byte stream
+constexpr uint32_t PACKET_MAGIC_NUMBER = 0x7F3B29D1;
+
 /*
     Packet header (8bytes)
 */
-struct GamePacketHeader {
+struct PacketHeader {
     uint32_t magic_number;
-    uint32_t body_size;
+    uint32_t sequence_number;
+    uint32_t payload_size;
+    uint32_t payload_type;
 };
 
-static_assert(sizeof(GamePacketHeader) == 8);
+enum class PayloadType : uint32_t {
+    Unknown,
+    Hello,
+    Accept,
+    GoodBye,
+    Auth,
+    Match,
+    Reconnect,
+    Input,
+    FrameSnapshot,
+    Chat,
+    Info,
+    Error
+};
+
+constexpr size_t PACKET_HEADER_SIZE = 16;
+static_assert(sizeof(PacketHeader) == PACKET_HEADER_SIZE);
 
 /*
     Position2D (8bytes)

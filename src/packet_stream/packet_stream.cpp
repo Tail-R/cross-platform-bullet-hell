@@ -1,226 +1,163 @@
 #include <iostream>
-#include <cstdint>
-#include <cstddef>
-#include <cstring>
-#include <array>
 #include "packet_stream.hpp"
+#include "../frame/frame_serializer.hpp"
 
 namespace {
     constexpr size_t TEMP_BUFFER_SIZE = 4096;
 }
 
-PacketStreamClient::PacketStreamClient(std::string_view server_addr, uint16_t server_port, uint32_t magic_number, uint32_t max_packet_size)
-    : m_client_socket(server_addr, server_port)
-    , m_server_connected(false)
-    , m_magic_number(magic_number)
-    , m_max_packet_size(max_packet_size)
+PacketStreamClient::PacketStreamClient(std::shared_ptr<ClientSocket> socket)
+    : m_socket(std::move(socket))
+    , m_running(false)
 {}
 
 PacketStreamClient::~PacketStreamClient() {
-    disconnect();
+    stop();
 }
 
-bool PacketStreamClient::connect_to_server() {
-    m_server_connected = m_client_socket.connect_to_server();
-
-    return m_server_connected;
-}
-
-void PacketStreamClient::disconnect() {
-    if (m_server_connected)
+/*
+    Launch the worker thread that receives bytes from server
+*/
+void PacketStreamClient::start() {
+    if (!m_running)
     {
-        m_client_socket.disconnect();
-        m_server_connected = false;
+        m_running = true;
+        
+        m_recv_thread = std::thread(&PacketStreamClient::receive_loop, this);
+        std::cout << "[PacketStreamClient] DEBUG: Receive thread has been created" << "\n";
     }
 }
 
-std::optional<FrameSnapshot> PacketStreamClient::retrieve_frame(size_t max_attempts) {
-    for (size_t attempt = 0; attempt < max_attempts; attempt++)
+/*
+    Tell the worker threads to stop processing the byte stream
+    and waits for them to return.
+*/
+void PacketStreamClient::stop() {
+    if (m_running)
     {
-        // Insert packet into buffer
-        if (!refill_buffer())
+        m_running = false;
+
+        // Abort recv blocking
+        m_socket->abort();
+
+        if (m_recv_thread.joinable())
+        {
+            m_recv_thread.join();
+            
+            std::cout << "[PacketStreamClient] DEBUG: Receive thread has been joined" << "\n";
+        }
+    }
+}
+
+std::optional<FrameSnapshot> PacketStreamClient::poll_frame() {
+    std::lock_guard<std::mutex> lock(m_frame_mutex);
+
+    if (m_frame_queue.empty())
+    {
+        return std::nullopt;
+    }
+
+    const auto frame = std::move(m_frame_queue.front());
+    m_frame_queue.pop();
+
+    return frame;
+}
+
+void PacketStreamClient::receive_loop() {
+    std::byte temp_buffer[TEMP_BUFFER_SIZE];
+
+    while (m_running)
+    {
+        ssize_t bytes_read = m_socket->recv_data(temp_buffer, TEMP_BUFFER_SIZE);
+
+        if (bytes_read <= 0)
         {
             continue;
         }
 
-        while (true)
-        {
-            if(m_buffer.size() < sizeof(GamePacketHeader))
-            {
-                break;
-            }
+        m_buffer.insert(
+            m_buffer.end(),
+            temp_buffer,
+            temp_buffer + bytes_read
+        );
 
-            auto packet_header_opt = try_extract_packet_header();
-
-            if (!packet_header_opt)
-            {
-                continue;
-            }
-
-            auto packet_header = packet_header_opt.value();
-
-            if (!is_valid_packet_size(packet_header))
-            {
-                std::cerr << "[PacketStreamClient] Invalid packet size: " << packet_header.body_size << " bytes" << "\n";
-            
-                return std::nullopt;
-            }
-
-            auto frame_opt = try_extract_frame(packet_header);
-            
-            return frame_opt;
-        }
+        process_buffer();
     }
-
-    return std::nullopt;
 }
 
-std::vector<FrameSnapshot> PacketStreamClient::retrieve_all_frames(size_t max_attempts) {
-    std::vector<FrameSnapshot> frames;
+void PacketStreamClient::process_buffer() {
+    size_t offset = 0;
 
-    for (size_t attempt = 0; attempt < max_attempts; attempt++) {
-        if (!refill_buffer())
+    /*
+        Only process if there is more data in the buffer
+        than the size of the packet header
+    */
+    while (m_buffer.size() - offset >= PACKET_HEADER_SIZE)
+    {
+        PacketHeader header = {};
+
+        // Read magic number
+        memcpy(
+            &header,
+            m_buffer.data() + offset,
+            PACKET_HEADER_SIZE
+        );
+
+        // Check magic number
+        if (header.magic_number != PACKET_MAGIC_NUMBER)
+        {
+            // Increment the offset and retry
+            offset++;
+
+            continue;
+        }
+
+        // The packet receive is incomplete
+        if (m_buffer.size() - offset < PACKET_HEADER_SIZE + header.payload_size)
         {
             break;
         }
 
-        while (true)
+        // Read the payload
+        auto payload_start = m_buffer.begin() + offset + PACKET_HEADER_SIZE;
+        auto payload_end = m_buffer.begin() + offset + PACKET_HEADER_SIZE + header.payload_size;
+
+        std::vector<std::byte> payload(payload_start, payload_end);
+
+        const auto payload_type = static_cast<PayloadType>(header.payload_type);
+
+        // Deserialize the payload and push it onto the queue
+        switch (payload_type)
         {
-            if (m_buffer.size() < sizeof(GamePacketHeader))
+            // Frame snapshot
+            case PayloadType::FrameSnapshot:
             {
+                auto frame_opt = deserialize_frame(payload);
+
+                if (frame_opt.has_value())
+                {
+                    std::lock_guard<std::mutex> lock(m_frame_mutex);
+
+                    m_frame_queue.push(frame_opt.value());
+                }
+                else
+                {
+                    std::cerr << "[PacketStreamClient] Failed to deserialize payload" << "\n";
+                }
+
                 break;
             }
 
-            auto packet_header_opt = try_extract_packet_header();
-
-            if (!packet_header_opt)
-            {
-                continue;
-            }
-
-            auto packet_header = packet_header_opt.value();
-
-            if (!is_valid_packet_size(packet_header))
-            {
-                std::cerr << "Invalid packet size\n";
-
-                return frames;
-            }
-
-            auto frame_opt = try_extract_frame(packet_header);
-
-            if (frame_opt)
-            {
-                frames.push_back(frame_opt.value());
-            }
-            else
-            {
-                break;
-            }
+            default:
+                std::cerr << "[PacketStreamClient] Unknown packet type: " << static_cast<uint32_t>(header.payload_type) << "\n";
         }
+
+        offset += PACKET_HEADER_SIZE + header.payload_size;
     }
 
-    return frames;
-}
-
-bool PacketStreamClient::refill_buffer() {
-    if (!m_server_connected)
+    // Erase
+    if (offset > 0)
     {
-        return false;
+        m_buffer.erase(m_buffer.begin(), m_buffer.begin() + offset);
     }
-
-    std::array<std::byte, TEMP_BUFFER_SIZE> temp;
-
-    auto bytes_received = m_client_socket.recv_data(temp.data(), temp.size());
-
-    if (bytes_received <= 0)
-    {
-        disconnect();
-
-        return false;
-    }
-    
-    m_buffer.insert(m_buffer.end(), temp.data(), temp.data() + bytes_received);
-
-    return true;
-}
-
-void PacketStreamClient::consume_buffer(size_t size) {
-    if (size >= m_buffer.size())
-    {
-        m_buffer.clear();
-    }
-    else
-    {
-        m_buffer.erase(
-            m_buffer.begin(),
-            m_buffer.begin() + static_cast<ssize_t>(size)
-        );
-    }
-}
-
-std::optional<GamePacketHeader> PacketStreamClient::try_extract_packet_header() {
-    if(m_buffer.size() < sizeof(GamePacketHeader))
-    {
-        return std::nullopt;
-    }
-
-    // Read the first 4 bytes of the buffer and check if its a magic number
-    GamePacketHeader packet_header;
-    memcpy(&packet_header, m_buffer.data(), sizeof(GamePacketHeader));
-
-    if (packet_header.magic_number != m_magic_number)
-    {
-        m_buffer.erase(m_buffer.begin());
-
-        return std::nullopt;
-    }
-
-    return packet_header;
-}
-
-std::optional<FrameSnapshot> PacketStreamClient::try_extract_frame(const GamePacketHeader& packet_header) {
-    const auto total_packet_size = sizeof(GamePacketHeader) + packet_header.body_size;
-
-    if (m_buffer.size() < total_packet_size)
-    {
-        const auto bytes_needed = sizeof(GamePacketHeader) + packet_header.body_size - m_buffer.size();
-
-        // Receive extra bytes
-        auto extra_packet_opt = m_client_socket.recv_exact(bytes_needed);
-        
-        if (!extra_packet_opt)
-        {
-            return std::nullopt;
-        }
-        
-        // Join the rest of buffer and extra bytes
-        m_buffer.insert(
-            m_buffer.end(),
-            extra_packet_opt->begin(),
-            extra_packet_opt->end()
-        );
-    }
-
-    std::vector<std::byte> frame_data(
-        m_buffer.begin() + sizeof(GamePacketHeader),
-        m_buffer.begin() + sizeof(GamePacketHeader) + packet_header.body_size
-    );
-
-    auto frame_opt = deserialize_frame(frame_data);
-
-    if (frame_opt)
-    {
-        consume_buffer(total_packet_size);
-    }
-
-    return frame_opt;
-}
-
-bool PacketStreamClient::is_valid_packet_size(const GamePacketHeader& packet_header) {
-    // Validation for packet size
-    auto expr_1 = packet_header.body_size > 0;
-    auto expr_2 = packet_header.body_size + sizeof(GamePacketHeader) <= m_max_packet_size;
-
-    return expr_1 && expr_2;
 }

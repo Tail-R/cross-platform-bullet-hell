@@ -1,53 +1,41 @@
 #pragma once
 
+#include <thread>
+#include <mutex>
+#include <queue>
+#include <vector>
+#include <atomic>
+#include <optional>
+#include <memory>
+
 #include "../socket/socket.hpp"
 #include "../frame/frame_template.hpp"
-#include "../frame/frame_serializer.hpp"
-
-/*
-    To-Do: Optimize the part of finding a magic number
-*/
 
 class PacketStreamClient {
 public:
-    PacketStreamClient(std::string_view server_addr, uint16_t server_port, uint32_t magic_number, uint32_t max_packet_size);
+    explicit PacketStreamClient(std::shared_ptr<ClientSocket> socket);
     ~PacketStreamClient();
 
-    // Delete copy constructor and copy assignment operator
-    PacketStreamClient(const PacketStreamClient&) = delete;
-    PacketStreamClient& operator=(const PacketStreamClient&) = delete;
+    void start();
+    void stop();
 
-    // Delete move constructor and move assignment operator
-    PacketStreamClient(PacketStreamClient&& other) = delete;
-    PacketStreamClient& operator=(PacketStreamClient&& other) = delete;
-
-    bool connect_to_server();
-    void disconnect();
-
-    std::optional<FrameSnapshot> retrieve_frame(size_t max_attempts = 10);
-    std::vector<FrameSnapshot> retrieve_all_frames(size_t max_attempts = 10);
+    std::optional<FrameSnapshot> poll_frame();
+    // std::optional<ServerMessage> poll_message();
+    // bool send_message(ClientMessage);
 
 private:
-    bool refill_buffer();
-    void consume_buffer(size_t size);
-    std::optional<GamePacketHeader> try_extract_packet_header();
-    std::optional<FrameSnapshot> try_extract_frame(const GamePacketHeader& packet_header);
-    bool is_valid_packet_size(const GamePacketHeader& packet_header);
+    void receive_loop();
+    void process_buffer();
 
-    ClientSocket            m_client_socket;
-    bool                    m_server_connected;
+    std::shared_ptr<ClientSocket>   m_socket;
+    std::atomic<bool>               m_running;
+    std::thread                     m_recv_thread;
+    
+    std::vector<std::byte>          m_buffer;
 
-    /*
-        This is used to detect the start of a packet
-        and is fixed at 4 bytes so should not be changed
-    */
-    uint32_t                m_magic_number;
-    uint32_t                m_max_packet_size;
-    std::vector<std::byte>  m_buffer;
+    std::mutex                      m_frame_mutex;
+    std::queue<FrameSnapshot>       m_frame_queue;
+
+    // std::mutex                      m_message_mutex;
+    // std::queue<ServerMessage>       m_message_queue;      
 };
-
-// class PacketStreamServer {
-// public:
-
-// private:
-// };
