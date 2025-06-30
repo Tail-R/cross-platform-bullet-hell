@@ -4,37 +4,6 @@
 #include <cstdint>
 #include <cstddef>
 
-// A Magic number to synchronize the byte stream
-constexpr uint32_t PACKET_MAGIC_NUMBER = 0x7F3B29D1;
-
-/*
-    Packet header (8bytes)
-*/
-struct PacketHeader {
-    uint32_t magic_number;
-    uint32_t sequence_number;
-    uint32_t payload_size;
-    uint32_t payload_type;
-};
-
-enum class PayloadType : uint32_t {
-    Unknown,
-    Hello,
-    Accept,
-    GoodBye,
-    Auth,
-    Match,
-    Reconnect,
-    Input,
-    FrameSnapshot,
-    Chat,
-    Info,
-    Error
-};
-
-constexpr size_t PACKET_HEADER_SIZE = 16;
-static_assert(sizeof(PacketHeader) == PACKET_HEADER_SIZE);
-
 /*
     Position2D (8bytes)
 */
@@ -67,8 +36,8 @@ struct StageSnapshot {
     uint32_t    timestamp;
 };
 
-constexpr size_t STAGE_OBJECT_SIZE = 8;
-static_assert(sizeof(StageSnapshot) == STAGE_OBJECT_SIZE);
+constexpr size_t STAGE_SNAPSHOT_SIZE = 8;
+static_assert(sizeof(StageSnapshot) == STAGE_SNAPSHOT_SIZE);
 
 /*
     Player snapshot (32bytes)
@@ -90,8 +59,8 @@ struct PlayerSnapshot {
     uint8_t     power;
 };
 
-constexpr size_t PLAYER_OBJECT_SIZE = 32;
-static_assert(sizeof(PlayerSnapshot) == PLAYER_OBJECT_SIZE);
+constexpr size_t PLAYER_SNAPSHOT_SIZE = 32;
+static_assert(sizeof(PlayerSnapshot) == PLAYER_SNAPSHOT_SIZE);
 
 /*
     Enemy snapshot (32bytes)
@@ -109,8 +78,8 @@ struct EnemySnapshot {
     uint32_t    health;
 };
 
-constexpr size_t ENEMY_OBJECT_SIZE = 32;
-static_assert(sizeof(EnemySnapshot) == ENEMY_OBJECT_SIZE);
+constexpr size_t ENEMY_SNAPSHOT_SIZE = 32;
+static_assert(sizeof(EnemySnapshot) == ENEMY_SNAPSHOT_SIZE);
 
 /*
     Boss snapshot (36bytes)
@@ -133,8 +102,8 @@ struct BossSnapshot {
     uint8_t     reserved_02;    // Reserved area
 };
 
-constexpr size_t BOSS_OBJECT_SIZE = 36;
-static_assert(sizeof(BossSnapshot) == BOSS_OBJECT_SIZE);
+constexpr size_t BOSS_SNAPSHOT_SIZE = 36;
+static_assert(sizeof(BossSnapshot) == BOSS_SNAPSHOT_SIZE);
 
 /*
     Bullet snapshot (32bytes)
@@ -153,8 +122,8 @@ struct BulletSnapshot {
     uint8_t     owner;
 };
 
-constexpr size_t BULLET_OBJECT_SIZE = 36;
-static_assert(sizeof(BulletSnapshot) == BULLET_OBJECT_SIZE);
+constexpr size_t BULLET_SNAPSHOT_SIZE = 36;
+static_assert(sizeof(BulletSnapshot) == BULLET_SNAPSHOT_SIZE);
 
 /*
     Item snapshot (32bytes)
@@ -172,8 +141,8 @@ struct ItemSnapshot {
     float       score;
 };
 
-constexpr size_t ITEM_OBJECT_SIZE = 32;
-static_assert(sizeof(ItemSnapshot) == ITEM_OBJECT_SIZE);
+constexpr size_t ITEM_SNAPSHOT_SIZE = 32;
+static_assert(sizeof(ItemSnapshot) == ITEM_SNAPSHOT_SIZE);
 
 /*
     Frame snapshot
@@ -216,4 +185,4 @@ struct FrameSnapshot {
     std::vector<ItemSnapshot>       item_vector;
 };
 
-constexpr size_t FRAME_OBJECT_FIXED_HEADER_SIZE = 20;
+constexpr size_t FRAME_SNAPSHOT_FIXED_HEADER_SIZE = 20;

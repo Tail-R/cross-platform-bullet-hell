@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "../socket/socket.hpp"
-#include "../frame/frame_template.hpp"
+#include "../packet_template/frame/frame.hpp"
 
 class PacketStreamClient {
 public:

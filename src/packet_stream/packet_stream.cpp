@@ -1,6 +1,7 @@
 #include <iostream>
 #include "packet_stream.hpp"
-#include "../frame/frame_serializer.hpp"
+#include "../packet_template/header.hpp"
+#include "../packet_serializer/frame_serializer.hpp"
 
 namespace {
     constexpr size_t TEMP_BUFFER_SIZE = 4096;

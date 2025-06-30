@@ -95,7 +95,7 @@ AppResult App::run() {
 
         auto game_input = input_manager.get_game_input();
         if (game_input.pressed.test(static_cast<size_t>(GameAction::Shoot))) { quit = true; }
-        if (game_input.pressed.test(static_cast<size_t>(GameAction::Slowed))) {
+        if (game_input.pressed.test(static_cast<size_t>(GameAction::Focus))) {
             const auto result = client_socket->connect_to_server();
 
             if (result)

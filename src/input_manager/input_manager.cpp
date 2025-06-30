@@ -54,7 +54,7 @@ void InputManager::collect_input_events() {
     // Map held game action
     if (is_down(KEY_SHOOT))     { m_input_snapshot.game.held.set(static_cast<size_t>(GameAction::Shoot));       }
     if (is_down(KEY_SPELL))     { m_input_snapshot.game.held.set(static_cast<size_t>(GameAction::Spell));       }
-    if (is_down(KEY_SLOWED))    { m_input_snapshot.game.held.set(static_cast<size_t>(GameAction::Slowed));      }
+    if (is_down(KEY_FOCUS))     { m_input_snapshot.game.held.set(static_cast<size_t>(GameAction::Focus));       }
     if (is_down(KEY_OPEN_MENU)) { m_input_snapshot.game.held.set(static_cast<size_t>(GameAction::OpenMenu));    }
 
     SDL_Event e;
@@ -96,7 +96,7 @@ void InputManager::collect_input_events() {
                 // Game
                 if (code == KEY_SHOOT)      { m_input_snapshot.game.pressed.set(static_cast<size_t>(GameAction::Shoot));    }
                 if (code == KEY_SPELL)      { m_input_snapshot.game.pressed.set(static_cast<size_t>(GameAction::Spell));    }
-                if (code == KEY_SLOWED)     { m_input_snapshot.game.pressed.set(static_cast<size_t>(GameAction::Slowed));   }
+                if (code == KEY_FOCUS)      { m_input_snapshot.game.pressed.set(static_cast<size_t>(GameAction::Focus));    }
                 if (code == KEY_OPEN_MENU)  { m_input_snapshot.game.pressed.set(static_cast<size_t>(GameAction::OpenMenu)); }
             }
 
@@ -110,7 +110,7 @@ void InputManager::collect_input_events() {
                 // Game
                 if (code == KEY_SHOOT)      { m_input_snapshot.game.released.set(static_cast<size_t>(GameAction::Shoot));    }
                 if (code == KEY_SPELL)      { m_input_snapshot.game.released.set(static_cast<size_t>(GameAction::Spell));    }
-                if (code == KEY_SLOWED)     { m_input_snapshot.game.released.set(static_cast<size_t>(GameAction::Slowed));   }
+                if (code == KEY_FOCUS)      { m_input_snapshot.game.released.set(static_cast<size_t>(GameAction::Focus));    }
                 if (code == KEY_OPEN_MENU)  { m_input_snapshot.game.released.set(static_cast<size_t>(GameAction::OpenMenu)); }
             }
         }

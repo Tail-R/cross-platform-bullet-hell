@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include "frame_template.hpp"
+#include "frame.hpp"
 
 std::string frame_to_json_str(const FrameSnapshot& frame) {
     std::ostringstream oss;

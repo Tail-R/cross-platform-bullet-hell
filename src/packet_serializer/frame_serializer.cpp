@@ -30,18 +30,18 @@ std::optional<std::vector<std::byte>> serialize_frame(const FrameSnapshot& frame
     }
 
     // Calculate the total size of the packet (frame)
-    auto packet_size = FRAME_OBJECT_FIXED_HEADER_SIZE +
-        STAGE_OBJECT_SIZE +
+    auto packet_size = FRAME_SNAPSHOT_FIXED_HEADER_SIZE +
+        STAGE_SNAPSHOT_SIZE +
         sizeof(frame.player_count) +
-        PLAYER_OBJECT_SIZE * frame.player_count +
+        PLAYER_SNAPSHOT_SIZE * frame.player_count +
         sizeof(frame.enemy_count) +
-        ENEMY_OBJECT_SIZE * frame.enemy_count +
+        ENEMY_SNAPSHOT_SIZE * frame.enemy_count +
         sizeof(frame.boss_count) +
-        BOSS_OBJECT_SIZE * frame.boss_count +
+        BOSS_SNAPSHOT_SIZE * frame.boss_count +
         sizeof(frame.bullet_count) +
-        BULLET_OBJECT_SIZE * frame.bullet_count +
+        BULLET_SNAPSHOT_SIZE * frame.bullet_count +
         sizeof(frame.item_count) +
-        ITEM_OBJECT_SIZE * frame.item_count;
+        ITEM_SNAPSHOT_SIZE * frame.item_count;
 
     std::vector<std::byte> bytes(packet_size);
     auto bytes_offset = bytes.data();
@@ -50,19 +50,19 @@ std::optional<std::vector<std::byte>> serialize_frame(const FrameSnapshot& frame
     memcpy(
         bytes_offset,
         &frame,
-        FRAME_OBJECT_FIXED_HEADER_SIZE
+        FRAME_SNAPSHOT_FIXED_HEADER_SIZE
     );
 
-    bytes_offset += FRAME_OBJECT_FIXED_HEADER_SIZE;
+    bytes_offset += FRAME_SNAPSHOT_FIXED_HEADER_SIZE;
 
     // Pack the stage object
     memcpy(
         bytes_offset,
         &frame.stage,
-        STAGE_OBJECT_SIZE
+        STAGE_SNAPSHOT_SIZE
     );
 
-    bytes_offset += STAGE_OBJECT_SIZE;
+    bytes_offset += STAGE_SNAPSHOT_SIZE;
 
     // Pack the player objects
     memcpy(
@@ -76,10 +76,10 @@ std::optional<std::vector<std::byte>> serialize_frame(const FrameSnapshot& frame
     memcpy(
         bytes_offset,
         frame.player_vector.data(),
-        PLAYER_OBJECT_SIZE * frame.player_count
+        PLAYER_SNAPSHOT_SIZE * frame.player_count
     );
 
-    bytes_offset += PLAYER_OBJECT_SIZE * frame.player_count;
+    bytes_offset += PLAYER_SNAPSHOT_SIZE * frame.player_count;
 
     // Pack the enemy objects
     memcpy(
@@ -93,10 +93,10 @@ std::optional<std::vector<std::byte>> serialize_frame(const FrameSnapshot& frame
     memcpy(
         bytes_offset,
         frame.enemy_vector.data(),
-        ENEMY_OBJECT_SIZE * frame.enemy_count
+        ENEMY_SNAPSHOT_SIZE * frame.enemy_count
     );
 
-    bytes_offset += ENEMY_OBJECT_SIZE * frame.enemy_count;
+    bytes_offset += ENEMY_SNAPSHOT_SIZE * frame.enemy_count;
 
     // Pack the boss objects
     memcpy(
@@ -110,10 +110,10 @@ std::optional<std::vector<std::byte>> serialize_frame(const FrameSnapshot& frame
     memcpy(
         bytes_offset,
         frame.boss_vector.data(),
-        BOSS_OBJECT_SIZE * frame.boss_count
+        BOSS_SNAPSHOT_SIZE * frame.boss_count
     );
 
-    bytes_offset += BOSS_OBJECT_SIZE * frame.boss_count;
+    bytes_offset += BOSS_SNAPSHOT_SIZE * frame.boss_count;
 
     // Pack the bullet objects
     memcpy(
@@ -127,10 +127,10 @@ std::optional<std::vector<std::byte>> serialize_frame(const FrameSnapshot& frame
     memcpy(
         bytes_offset,
         frame.bullet_vector.data(),
-        BULLET_OBJECT_SIZE * frame.bullet_count
+        BULLET_SNAPSHOT_SIZE * frame.bullet_count
     );
 
-    bytes_offset += BULLET_OBJECT_SIZE * frame.bullet_count;
+    bytes_offset += BULLET_SNAPSHOT_SIZE * frame.bullet_count;
 
     // Pack the item objects
     memcpy(
@@ -144,10 +144,10 @@ std::optional<std::vector<std::byte>> serialize_frame(const FrameSnapshot& frame
     memcpy(
         bytes_offset,
         frame.item_vector.data(),
-        ITEM_OBJECT_SIZE * frame.item_count
+        ITEM_SNAPSHOT_SIZE * frame.item_count
     );
 
-    bytes_offset += ITEM_OBJECT_SIZE * frame.item_count;
+    bytes_offset += ITEM_SNAPSHOT_SIZE * frame.item_count;
 
     return bytes;
 }
@@ -175,10 +175,10 @@ std::optional<FrameSnapshot> deserialize_frame(const std::vector<std::byte>& byt
     memcpy(
         frame.player_vector.data(),
         bytes_offset,
-        PLAYER_OBJECT_SIZE * frame.player_count
+        PLAYER_SNAPSHOT_SIZE * frame.player_count
     );
 
-    bytes_offset += PLAYER_OBJECT_SIZE * frame.player_count;
+    bytes_offset += PLAYER_SNAPSHOT_SIZE * frame.player_count;
 
     // Acquire the number of enemies and then copy the enemy objects
     bytes_offset = copy_bytes_to_t(&frame.enemy_count, bytes_offset);
@@ -187,10 +187,10 @@ std::optional<FrameSnapshot> deserialize_frame(const std::vector<std::byte>& byt
     memcpy(
         frame.enemy_vector.data(),
         bytes_offset,
-        ENEMY_OBJECT_SIZE * frame.enemy_count
+        ENEMY_SNAPSHOT_SIZE * frame.enemy_count
     );
 
-    bytes_offset += ENEMY_OBJECT_SIZE * frame.enemy_count;
+    bytes_offset += ENEMY_SNAPSHOT_SIZE * frame.enemy_count;
 
     // // Acquire the number of bosses and then copy the boss objects
     bytes_offset = copy_bytes_to_t(&frame.boss_count, bytes_offset);
@@ -199,10 +199,10 @@ std::optional<FrameSnapshot> deserialize_frame(const std::vector<std::byte>& byt
     memcpy(
         frame.boss_vector.data(),
         bytes_offset,
-        BOSS_OBJECT_SIZE * frame.boss_count
+        BOSS_SNAPSHOT_SIZE * frame.boss_count
     );
 
-    bytes_offset += BOSS_OBJECT_SIZE * frame.boss_count;
+    bytes_offset += BOSS_SNAPSHOT_SIZE * frame.boss_count;
 
     // // Acquire the number of bullets and then copy the bullet objects
     bytes_offset = copy_bytes_to_t(&frame.bullet_count, bytes_offset);
@@ -211,10 +211,10 @@ std::optional<FrameSnapshot> deserialize_frame(const std::vector<std::byte>& byt
     memcpy(
         frame.bullet_vector.data(),
         bytes_offset,
-        BULLET_OBJECT_SIZE * frame.bullet_count
+        BULLET_SNAPSHOT_SIZE * frame.bullet_count
     );
 
-    bytes_offset += BULLET_OBJECT_SIZE * frame.bullet_count;
+    bytes_offset += BULLET_SNAPSHOT_SIZE * frame.bullet_count;
 
     // Acquire the number of items and then copy the item objects
     bytes_offset = copy_bytes_to_t(&frame.item_count, bytes_offset);
@@ -223,10 +223,10 @@ std::optional<FrameSnapshot> deserialize_frame(const std::vector<std::byte>& byt
     memcpy(
         frame.item_vector.data(),
         bytes_offset,
-        ITEM_OBJECT_SIZE * frame.item_count
+        ITEM_SNAPSHOT_SIZE * frame.item_count
     );
 
-    bytes_offset += ITEM_OBJECT_SIZE * frame.item_count;
+    bytes_offset += ITEM_SNAPSHOT_SIZE * frame.item_count;
 
     return frame;
 }

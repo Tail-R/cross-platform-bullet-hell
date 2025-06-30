@@ -4,7 +4,7 @@
 
 constexpr SDL_Scancode KEY_SHOOT        = SDL_SCANCODE_Z;
 constexpr SDL_Scancode KEY_SPELL        = SDL_SCANCODE_X;
-constexpr SDL_Scancode KEY_SLOWED       = SDL_SCANCODE_LSHIFT;
+constexpr SDL_Scancode KEY_FOCUS        = SDL_SCANCODE_LSHIFT;
 constexpr SDL_Scancode KEY_OPEN_MENU    = SDL_SCANCODE_ESCAPE;
 
 constexpr SDL_Scancode KEY_UP           = SDL_SCANCODE_UP;

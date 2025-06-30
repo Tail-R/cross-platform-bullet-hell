@@ -22,8 +22,8 @@ set(SRC_FILES
     ${SRC_DIR}/main.cpp
 
     # Game system
-    ${SRC_DIR}/frame/frame_template.cpp
-    ${SRC_DIR}/frame/frame_serializer.cpp
+    ${SRC_DIR}/packet_template/frame/frame.cpp
+    ${SRC_DIR}/packet_serializer/frame_serializer.cpp
     ${SRC_DIR}/socket/socket.cpp
     ${SRC_DIR}/packet_stream/packet_stream.cpp
 

@@ -20,7 +20,7 @@ namespace assets_constants {
 }
 
 namespace logger_constants {
-    constexpr std::string_view  LOG_FILE_DIR    = "log";
+    constexpr std::string_view  LOG_FILE_DIR    = PROJECT_ROOT_DIR "log";
     constexpr std::string_view  LOG_FILE_NAME   = "app.log";
 }
 
