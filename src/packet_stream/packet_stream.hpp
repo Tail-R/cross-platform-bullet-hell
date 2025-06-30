@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "../socket/socket.hpp"
-#include "../packet_template/frame.hpp"
+#include "../packet_template/packet_template.hpp"
 
 class PacketStreamClient {
 public:
@@ -20,8 +20,9 @@ public:
     void stop();
 
     std::optional<FrameSnapshot> poll_frame();
-    // std::optional<ServerMessage> poll_message();
-    // bool send_message(ClientMessage);
+    std::optional<PacketPayload> poll_message();
+
+    bool send_packet(Packet);
 
 private:
     void receive_loop();
@@ -36,8 +37,8 @@ private:
     std::mutex                      m_frame_mutex;
     std::queue<FrameSnapshot>       m_frame_queue;
 
-    // std::mutex                      m_message_mutex;
-    // std::queue<ServerMessage>       m_message_queue;      
+    std::mutex                      m_message_mutex;
+    std::queue<PacketPayload>       m_message_queue;      
 };
 
 class PacketStreamServer {

@@ -23,4 +23,6 @@ using PacketPayload = std::variant<
 struct Packet {
     PacketHeader    header;
     PacketPayload   payload;
+
+    PayloadType     payload_type();
 };
