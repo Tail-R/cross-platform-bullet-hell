@@ -26,6 +26,7 @@ set(SRC_FILES
     ${SRC_DIR}/packet_serializer/frame_serializer.cpp
     ${SRC_DIR}/packet_serializer/greeting_serializer.cpp
     ${SRC_DIR}/packet_serializer/game_serializer.cpp
+    ${SRC_DIR}/packet_serializer/input_serializer.cpp
     ${SRC_DIR}/socket/socket.cpp
     ${SRC_DIR}/packet_stream/packet_stream.cpp
 
