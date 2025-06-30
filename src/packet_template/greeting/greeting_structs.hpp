@@ -24,7 +24,7 @@ struct ServerAccept {
 };
 
 /*
-    GoodBye
+    Goodbye
 */
 struct ClientGoodBye {
     GoodByeReasonCode reason_code;
