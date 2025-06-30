@@ -1,0 +1,219 @@
+#pragma once
+
+#include <vector>
+#include <cstdint>
+#include <cstddef>
+
+// A Magic number to synchronize the byte stream
+constexpr uint32_t PACKET_MAGIC_NUMBER = 0x7F3B29D1;
+
+/*
+    Packet header (8bytes)
+*/
+struct PacketHeader {
+    uint32_t magic_number;
+    uint32_t sequence_number;
+    uint32_t payload_size;
+    uint32_t payload_type;
+};
+
+enum class PayloadType : uint32_t {
+    Unknown,
+    Hello,
+    Accept,
+    GoodBye,
+    Auth,
+    Match,
+    Reconnect,
+    Input,
+    FrameSnapshot,
+    Chat,
+    Info,
+    Error
+};
+
+constexpr size_t PACKET_HEADER_SIZE = 16;
+static_assert(sizeof(PacketHeader) == PACKET_HEADER_SIZE);
+
+/*
+    Position2D (8bytes)
+*/
+struct Position2D {
+    float x;
+    float y;
+};
+
+static_assert(sizeof(Position2D) == 8);
+
+/*
+    Velocity2D (8bytes)
+*/
+struct Velocity2D {
+    float x;
+    float y;
+};
+
+static_assert(sizeof(Velocity2D) == 8);
+
+/*
+    Stage snapshot (8bytes)
+*/
+struct StageSnapshot {
+    uint8_t     id;
+    uint8_t     name;
+    uint8_t     state;
+    uint8_t     next_stage;
+
+    uint32_t    timestamp;
+};
+
+constexpr size_t STAGE_OBJECT_SIZE = 8;
+static_assert(sizeof(StageSnapshot) == STAGE_OBJECT_SIZE);
+
+/*
+    Player snapshot (32bytes)
+*/
+struct PlayerSnapshot {
+    uint8_t     id;
+    uint8_t     name;
+    uint8_t     state;
+    uint8_t     attack_pattern;
+
+    Position2D  pos;
+    Velocity2D  vel;
+    float       radius;
+    float       angle;
+
+    uint8_t     current_spell;
+    uint8_t     lives;
+    uint8_t     bombs;
+    uint8_t     power;
+};
+
+constexpr size_t PLAYER_OBJECT_SIZE = 32;
+static_assert(sizeof(PlayerSnapshot) == PLAYER_OBJECT_SIZE);
+
+/*
+    Enemy snapshot (32bytes)
+*/
+struct EnemySnapshot {
+    uint8_t     id;
+    uint8_t     name;
+    uint8_t     state;
+    uint8_t     attack_pattern;
+    
+    Position2D  pos;
+    Velocity2D  vel;
+    float       radius;
+    float       angle;
+    uint32_t    health;
+};
+
+constexpr size_t ENEMY_OBJECT_SIZE = 32;
+static_assert(sizeof(EnemySnapshot) == ENEMY_OBJECT_SIZE);
+
+/*
+    Boss snapshot (36bytes)
+*/
+struct BossSnapshot {
+    uint8_t     id;
+    uint8_t     name;
+    uint8_t     state;
+    uint8_t     attack_pattern;
+
+    Position2D  pos;
+    Velocity2D  vel;
+    float       radius;
+    float       angle;
+    uint32_t    health;
+
+    uint8_t     current_spell;
+    uint8_t     phase;
+    uint8_t     reserved_01;    // Reserved area
+    uint8_t     reserved_02;    // Reserved area
+};
+
+constexpr size_t BOSS_OBJECT_SIZE = 36;
+static_assert(sizeof(BossSnapshot) == BOSS_OBJECT_SIZE);
+
+/*
+    Bullet snapshot (32bytes)
+*/
+struct BulletSnapshot {
+    uint32_t    id;
+    Position2D  pos;
+    Velocity2D  vel;
+    float       radius;
+    float       angle;
+    uint32_t    damage;
+
+    uint8_t     name;
+    uint8_t     state;
+    uint8_t     flight_pattern;
+    uint8_t     owner;
+};
+
+constexpr size_t BULLET_OBJECT_SIZE = 36;
+static_assert(sizeof(BulletSnapshot) == BULLET_OBJECT_SIZE);
+
+/*
+    Item snapshot (32bytes)
+*/
+struct ItemSnapshot {
+    uint8_t     id;
+    uint8_t     name;
+    uint8_t     state;
+    uint8_t     flight_pattern;
+
+    Position2D  pos;
+    Velocity2D  vel;
+    float       radius;
+    float       angle;
+    float       score;
+};
+
+constexpr size_t ITEM_OBJECT_SIZE = 32;
+static_assert(sizeof(ItemSnapshot) == ITEM_OBJECT_SIZE);
+
+/*
+    Frame snapshot
+*/
+struct FrameSnapshot {
+    uint32_t    client_id;
+    uint32_t    opponent_id;
+    uint32_t    timestamp;
+    uint32_t    score;
+
+    uint8_t     mode;
+    uint8_t     difficulty;
+    uint8_t     state;
+
+    uint8_t     reserved_01;    // Reserved area
+
+    /***** 16 bytes total *****/
+
+    // Stage snapshot               [8bytes]
+    StageSnapshot                   stage;
+
+    // Player snapshot              [32bytes * n]
+    uint32_t                        player_count;
+    std::vector<PlayerSnapshot>     player_vector;
+
+    // Enemy snapshot               [32bytes * n]
+    uint32_t                        enemy_count;
+    std::vector<EnemySnapshot>      enemy_vector;
+
+    // Boss snapshot                [36bytes * n]
+    uint32_t                        boss_count;
+    std::vector<BossSnapshot>       boss_vector;
+
+    // Bullet snapshot              [32bytes * n]
+    uint32_t                        bullet_count;
+    std::vector<BulletSnapshot>     bullet_vector;
+
+    // Item snapshot                [32bytes * n]
+    uint32_t                        item_count;
+    std::vector<ItemSnapshot>       item_vector;
+};
+
+constexpr size_t FRAME_OBJECT_FIXED_HEADER_SIZE = 20;
