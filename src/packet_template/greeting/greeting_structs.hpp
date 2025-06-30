@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "greeting_enums.hpp"
 
 constexpr uint32_t MAX_CLIENT_NAME_SIZE = 32;
 
@@ -8,10 +9,11 @@ constexpr uint32_t MAX_CLIENT_NAME_SIZE = 32;
     Hello
 */
 struct ClientHello {
+    uint32_t client_name_size;
     char client_name[MAX_CLIENT_NAME_SIZE];
 };
 
-constexpr size_t CLIENT_HELLO_SIZE = 32;
+constexpr size_t CLIENT_HELLO_SIZE = 36;
 static_assert(sizeof(ClientHello) == CLIENT_HELLO_SIZE);
 
 /*
@@ -25,15 +27,15 @@ struct ServerAccept {
     GoodBye
 */
 struct ClientGoodBye {
-    uint32_t reason_code;
+    GoodByeReasonCode reason_code;
 };
 
 using ServerGoodBye = ClientGoodBye;
 
-constexpr size_t CLIENT_GOOD_BYE_SIZE = 4;
-constexpr size_t SERVER_GOOD_BYE_SIZE = 4;
+constexpr size_t CLIENT_GOODBYE_SIZE = 4;
+constexpr size_t SERVER_GOODBYE_SIZE = 4;
 
 static_assert(
-    sizeof(ClientGoodBye) == CLIENT_GOOD_BYE_SIZE &&
-    sizeof(ServerGoodBye) == SERVER_GOOD_BYE_SIZE
+    sizeof(ClientGoodBye) == CLIENT_GOODBYE_SIZE &&
+    sizeof(ServerGoodBye) == SERVER_GOODBYE_SIZE
 );

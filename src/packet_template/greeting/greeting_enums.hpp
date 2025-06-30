@@ -1,6 +1,11 @@
 #pragma once
 
-enum class GoodByeReasonCode {
+#include <cstdint>
+
+enum class GoodByeReasonCode : uint32_t {
     Unknown,
-    Quit
+    NormalExit,
+    Kicked,
+    ConnectionError,
+    Timeout
 };

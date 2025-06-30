@@ -23,13 +23,17 @@ enum class PayloadType : uint32_t {
     Hello,
     Accept,
     GoodBye,
-    Auth,
-    Game,
-    Match,
-    Reconnect,
+    // AuthRequest,
+    // AuthResponse,
+    GameRequest,
+    GameResponse,
+    // MatchRequest,
+    // MatchResponse
+    ReconnectRequest,
+    ReconnectResponse,
     Input,
     FrameSnapshot,
-    Chat,
-    Info,
-    Error
+    // Chat,
+    // Info,
+    // Error
 };
