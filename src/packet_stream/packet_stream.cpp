@@ -63,6 +63,97 @@ std::optional<FrameSnapshot> PacketStreamClient::poll_frame() {
     return frame;
 }
 
+std::optional<PacketPayload> PacketStreamClient::poll_message() {
+
+}
+
+bool PacketStreamClient::send_packet(const Packet& packet) {
+    std::vector<std::byte> payload_bytes;
+
+    switch (packet.header.payload_type)
+    {
+        case PayloadType::Hello:
+            payload_bytes = serialize_client_hello(std::get<ClientHello>(packet.payload));
+
+            break;
+
+        case PayloadType::Accept:
+            payload_bytes = serialize_server_accept(std::get<ServerAccept>(packet.payload));
+
+            break;
+
+        case PayloadType::GoodBye:
+            if (std::holds_alternative<ClientGoodBye>(packet.payload))
+            {
+                payload_bytes = serialize_client_goodbye(std::get<ClientGoodBye>(packet.payload));
+            }
+            else
+            {
+                payload_bytes = serialize_server_goodbye(std::get<ServerGoodBye>(packet.payload));
+            }
+
+            break;
+
+        case PayloadType::GameRequest:
+            payload_bytes = serialize_client_game_request(std::get<ClientGameRequest>(packet.payload));
+
+            break;
+
+        case PayloadType::GameResponse:
+            payload_bytes = serialize_server_game_response(std::get<ServerGameResponse>(packet.payload));
+
+            break;
+
+        case PayloadType::ReconnectRequest:
+            payload_bytes = serialize_client_reconnect_request(std::get<ClientReconnectRequest>(packet.payload));
+
+            break;
+
+        case PayloadType::ReconnectResponse:
+            payload_bytes = serialize_server_reconnect_response(std::get<ServerReconnectResponse>(packet.payload));
+
+            break;
+
+        case PayloadType::Input:
+            payload_bytes = serialize_client_input(std::get<ClientInput>(packet.payload));
+
+            break;
+
+        case PayloadType::FrameSnapshot:
+        {
+            auto frame_bytes_opt = serialize_frame(std::get<FrameSnapshot>(packet.payload));
+
+            if (!frame_bytes_opt.has_value())
+            {
+                std::cerr << "[PacketStreamClient] Failed to serialize frame. The data can not be sent." << "\n";
+
+                return false;
+            }
+            
+            payload_bytes = frame_bytes_opt.value();
+        }
+
+            break;
+
+        default:
+            std::cerr << "[PacketStreamClient] Unknown PayloadType. The data can not be sent." << "\n";
+
+            return false;
+    }
+
+    PacketHeader header = packet.header;
+    header.payload_size = static_cast<uint32_t>(payload_bytes.size());
+    header.magic_number = PACKET_MAGIC_NUMBER;
+
+    std::vector<std::byte> buffer;
+    auto header_bytes = serialize_packet_header(header);
+
+    buffer.insert(buffer.end(), header_bytes.begin(), header_bytes.end());
+    buffer.insert(buffer.end(), payload_bytes.begin(), payload_bytes.end());
+
+    return m_socket->send_data(buffer);
+}
+
 void PacketStreamClient::receive_loop() {
     std::byte temp_buffer[TEMP_BUFFER_SIZE];
 

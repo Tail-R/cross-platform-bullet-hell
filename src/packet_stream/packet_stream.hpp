@@ -22,7 +22,7 @@ public:
     std::optional<FrameSnapshot> poll_frame();
     std::optional<PacketPayload> poll_message();
 
-    bool send_packet(Packet);
+    bool send_packet(const Packet& packet);
 
 private:
     void receive_loop();
@@ -41,10 +41,10 @@ private:
     std::queue<PacketPayload>       m_message_queue;      
 };
 
-class PacketStreamServer {
-public:
+// class PacketStreamServer {
+// public:
+//     explicit PacketStreamServer(std::shared_ptr<ClientConnection> client_connection);
 
+// private:
 
-private:
-
-};
+// };

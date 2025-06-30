@@ -30,12 +30,12 @@ struct ClientGoodBye {
     GoodByeReasonCode reason_code;
 };
 
-using ServerGoodBye = ClientGoodBye;
-
 constexpr size_t CLIENT_GOODBYE_SIZE = 4;
-constexpr size_t SERVER_GOODBYE_SIZE = 4;
+static_assert(sizeof(ClientGoodBye) == CLIENT_GOODBYE_SIZE);
 
-static_assert(
-    sizeof(ClientGoodBye) == CLIENT_GOODBYE_SIZE &&
-    sizeof(ServerGoodBye) == SERVER_GOODBYE_SIZE
-);
+struct ServerGoodBye {
+    GoodByeReasonCode reason_code;
+};
+
+constexpr size_t SERVER_GOODBYE_SIZE = 4;
+static_assert(sizeof(ServerGoodBye) == SERVER_GOODBYE_SIZE);
