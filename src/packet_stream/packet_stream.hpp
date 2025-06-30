@@ -39,3 +39,11 @@ private:
     // std::mutex                      m_message_mutex;
     // std::queue<ServerMessage>       m_message_queue;      
 };
+
+class PacketStreamServer {
+public:
+
+
+private:
+
+};

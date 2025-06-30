@@ -23,6 +23,7 @@ set(SRC_FILES
 
     # Game system
     ${SRC_DIR}/packet_template/frame/frame.cpp
+    ${SRC_DIR}/packet_serializer/header_serializer.cpp
     ${SRC_DIR}/packet_serializer/frame_serializer.cpp
     ${SRC_DIR}/packet_serializer/greeting_serializer.cpp
     ${SRC_DIR}/packet_serializer/game_serializer.cpp
