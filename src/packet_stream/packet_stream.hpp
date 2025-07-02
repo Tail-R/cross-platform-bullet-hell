@@ -16,6 +16,10 @@ public:
     explicit PacketStreamClient(std::shared_ptr<ClientSocket> socket);
     ~PacketStreamClient();
 
+    // Delete copy constructor and copy assignment operator
+    PacketStreamClient(const PacketStreamClient&) = delete;
+    PacketStreamClient& operator=(const PacketStreamClient&) = delete;
+
     void start();
     void stop();
 
@@ -45,6 +49,10 @@ class PacketStreamServer {
 public:
     explicit PacketStreamServer(std::shared_ptr<ClientConnection> connection);
     ~PacketStreamServer();
+
+    // Delete copy constructor and copy assignment operator
+    PacketStreamServer(const PacketStreamServer&) = delete;
+    PacketStreamServer& operator=(const PacketStreamServer&) = delete;
 
     void start();
     void stop();

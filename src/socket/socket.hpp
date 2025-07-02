@@ -92,7 +92,7 @@ public:
     ServerSocket(uint16_t server_port);
     ~ServerSocket();
 
-    // Disable the copy constructor and copy assignment operator
+    // Delete the copy constructor and copy assignment operator
     ServerSocket(const ServerSocket&) = delete;
     ServerSocket& operator=(const ServerSocket&) = delete;
 

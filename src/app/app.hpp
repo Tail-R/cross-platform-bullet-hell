@@ -53,6 +53,10 @@ public:
         const GLConfig& gl_config = GLConfig()
     );
 
+    // Delete copy constructor and copy assignment operator
+    App(const App&) = delete;
+    App& operator=(const App&) = delete;
+
     void cleanup();
 
     AppResult run();
