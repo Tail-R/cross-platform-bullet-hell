@@ -1,0 +1,12 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sdl2-src/src/main/windows/version.rc
+winresrc.h
+C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sdl2-src/src/main/windows/winresrc.h
+

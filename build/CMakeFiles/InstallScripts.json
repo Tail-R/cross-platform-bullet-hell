@@ -1,0 +1,9 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/cmake_install.cmake",
+		"C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sdl2-build/cmake_install.cmake",
+		"C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
