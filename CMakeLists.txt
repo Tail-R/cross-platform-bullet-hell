@@ -31,6 +31,7 @@ set(SRC_FILES
     ${SRC_DIR}/packet_serializer/input_serializer.cpp
     ${SRC_DIR}/socket/socket.cpp
     ${SRC_DIR}/packet_stream/packet_stream.cpp
+    # ${SRC_DIR}/pseudo_server/pseudo_server.cpp
 
     # SDL2 abstract class
     ${SRC_DIR}/app/app.cpp

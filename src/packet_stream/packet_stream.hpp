@@ -41,10 +41,26 @@ private:
     std::queue<PacketPayload>       m_message_queue;      
 };
 
-// class PacketStreamServer {
-// public:
-//     explicit PacketStreamServer(std::shared_ptr<ClientConnection> client_connection);
+class PacketStreamServer {
+public:
+    explicit PacketStreamServer(std::shared_ptr<ClientConnection> connection);
+    ~PacketStreamServer();
 
-// private:
+    void start();
+    void stop();
 
-// };
+    std::optional<Packet> poll_packet();
+    bool send_packet(const Packet& packet);
+
+private:
+    void receive_loop();
+    void process_buffer();
+
+    std::shared_ptr<ClientConnection>   m_connection;
+    std::atomic<bool>                   m_running;
+    std::thread                         m_recv_thread;
+
+    std::vector<std::byte>              m_buffer;
+    std::mutex                          m_packet_mutex;
+    std::queue<Packet>                  m_packet_queue;
+};

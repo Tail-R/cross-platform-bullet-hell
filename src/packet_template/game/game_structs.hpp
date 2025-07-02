@@ -9,11 +9,12 @@ constexpr size_t MAX_MESSAGE_SIZE = 256;
     Game request
 */
 struct ClientGameRequest {
-    GameMode    game_mode;
-    GameID      game_id;
+    PlayMode        play_mode;
+    GameVariant     game_variant;
+    GameDifficulty  game_difficulty;
 };
 
-constexpr size_t CLIENT_GAME_REQUEST_SIZE = 8;
+constexpr size_t CLIENT_GAME_REQUEST_SIZE = 12;
 static_assert(sizeof(ClientGameRequest) == CLIENT_GAME_REQUEST_SIZE);
 
 /*

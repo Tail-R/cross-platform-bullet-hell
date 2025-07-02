@@ -66,7 +66,7 @@ AppResult App::run() {
 
     const auto mesh_path     = std::string(assets_constants::MESH_DIR)       + "/square.lua";
     const auto shader_path   = std::string(assets_constants::SHADER_DIR)     + "/green_aura.lua";
-    const auto texture_path  = std::string(assets_constants::TEXTURE_DIR)    + "/zunmon_3002.png";
+    const auto texture_path  = std::string(assets_constants::TEXTURE_DIR)    + "/zmon_2001.png";
 
     mf.load_mesh(mesh_path);
     sf.load_shader(shader_path);
@@ -95,36 +95,18 @@ AppResult App::run() {
 
         auto game_input = input_manager.get_game_input();
         if (game_input.pressed.test(static_cast<size_t>(GameAction::Shoot))) { quit = true; }
-        if (game_input.pressed.test(static_cast<size_t>(GameAction::Focus))) {
-            const auto result = client_socket->connect_to_server();
-
-            if (result)
-            {
-                std::cout << "Reconnect to the server" << "\n";
-            }
-            else
-            {
-                std::cout << "Failed to reconnect to the server" << "\n";
-            }
-        }
+        if (game_input.pressed.test(static_cast<size_t>(GameAction::Focus))) {}
 
         // Get frame
         auto frame_opt = psc.poll_frame();
 
         if (frame_opt.has_value())
         {
+            std::cout << "Received a packet" << "\n";
+            
             x_offset = frame_opt.value().player_vector[0].pos.x;
             y_offset = frame_opt.value().player_vector[0].pos.y;
-        }   
-
-        // if (game_input.direction == InputDirection::Up)         { y_offset += speed * delta_time; }
-        // if (game_input.direction == InputDirection::Right)      { x_offset += speed * delta_time; }
-        // if (game_input.direction == InputDirection::Down)       { y_offset -= speed * delta_time; }
-        // if (game_input.direction == InputDirection::Left)       { x_offset -= speed * delta_time; }
-        // if (game_input.direction == InputDirection::UpRight)    { x_offset += speed * delta_time; y_offset += speed * delta_time; }
-        // if (game_input.direction == InputDirection::UpLeft)     { x_offset -= speed * delta_time; y_offset += speed * delta_time; }
-        // if (game_input.direction == InputDirection::DownRight)  { x_offset += speed * delta_time; y_offset -= speed * delta_time; }
-        // if (game_input.direction == InputDirection::DownLeft)   { x_offset -= speed * delta_time; y_offset -= speed * delta_time; }
+        }
 
         auto mesh = mf.get_mesh(mesh_path);
         auto shader = sf.get_shader(shader_path);

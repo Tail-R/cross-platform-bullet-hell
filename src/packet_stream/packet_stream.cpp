@@ -6,6 +6,9 @@ namespace {
     constexpr size_t TEMP_BUFFER_SIZE = 4096;
 }
 
+/*
+    Client
+*/
 PacketStreamClient::PacketStreamClient(std::shared_ptr<ClientSocket> socket)
     : m_socket(std::move(socket))
     , m_running(false)
@@ -15,35 +18,26 @@ PacketStreamClient::~PacketStreamClient() {
     stop();
 }
 
-/*
-    Launch the worker thread that receives bytes from server
-*/
 void PacketStreamClient::start() {
     if (!m_running)
     {
         m_running = true;
-        
+
         m_recv_thread = std::thread(&PacketStreamClient::receive_loop, this);
         std::cout << "[PacketStreamClient] DEBUG: Receive thread has been created" << "\n";
     }
 }
 
-/*
-    Tell the worker threads to stop processing the byte stream
-    and waits for them to return.
-*/
 void PacketStreamClient::stop() {
     if (m_running)
     {
         m_running = false;
 
-        // Abort recv blocking
         m_socket->abort();
 
         if (m_recv_thread.joinable())
         {
             m_recv_thread.join();
-            
             std::cout << "[PacketStreamClient] DEBUG: Receive thread has been joined" << "\n";
         }
     }
@@ -64,7 +58,17 @@ std::optional<FrameSnapshot> PacketStreamClient::poll_frame() {
 }
 
 std::optional<PacketPayload> PacketStreamClient::poll_message() {
+    std::lock_guard<std::mutex> lock(m_message_mutex);
 
+    if (m_message_queue.empty())
+    {
+        return std::nullopt;
+    }
+
+    const auto message = std::move(m_message_queue.front());
+    m_message_queue.pop();
+
+    return message;
 }
 
 bool PacketStreamClient::send_packet(const Packet& packet) {
@@ -72,73 +76,18 @@ bool PacketStreamClient::send_packet(const Packet& packet) {
 
     switch (packet.header.payload_type)
     {
-        case PayloadType::Hello:
-            payload_bytes = serialize_client_hello(std::get<ClientHello>(packet.payload));
-
-            break;
-
-        case PayloadType::Accept:
-            payload_bytes = serialize_server_accept(std::get<ServerAccept>(packet.payload));
-
-            break;
-
-        case PayloadType::GoodBye:
-            if (std::holds_alternative<ClientGoodBye>(packet.payload))
-            {
-                payload_bytes = serialize_client_goodbye(std::get<ClientGoodBye>(packet.payload));
-            }
-            else
-            {
-                payload_bytes = serialize_server_goodbye(std::get<ServerGoodBye>(packet.payload));
-            }
-
-            break;
-
-        case PayloadType::GameRequest:
-            payload_bytes = serialize_client_game_request(std::get<ClientGameRequest>(packet.payload));
-
-            break;
-
-        case PayloadType::GameResponse:
-            payload_bytes = serialize_server_game_response(std::get<ServerGameResponse>(packet.payload));
-
-            break;
-
-        case PayloadType::ReconnectRequest:
-            payload_bytes = serialize_client_reconnect_request(std::get<ClientReconnectRequest>(packet.payload));
-
-            break;
-
-        case PayloadType::ReconnectResponse:
-            payload_bytes = serialize_server_reconnect_response(std::get<ServerReconnectResponse>(packet.payload));
-
-            break;
-
-        case PayloadType::Input:
-            payload_bytes = serialize_client_input(std::get<ClientInput>(packet.payload));
-
-            break;
-
-        case PayloadType::FrameSnapshot:
-        {
-            auto frame_bytes_opt = serialize_frame(std::get<FrameSnapshot>(packet.payload));
-
-            if (!frame_bytes_opt.has_value())
-            {
-                std::cerr << "[PacketStreamClient] Failed to serialize frame. The data can not be sent." << "\n";
-
-                return false;
-            }
-            
-            payload_bytes = frame_bytes_opt.value();
-        }
-
-            break;
-
+        case PayloadType::ClientHello:              { payload_bytes = serialize_client_hello(std::get<ClientHello>(packet.payload)); break; }
+        case PayloadType::ClientGoodBye:            { payload_bytes = serialize_client_goodbye(std::get<ClientGoodBye>(packet.payload)); break; }
+        case PayloadType::ClientGameRequest:        { payload_bytes = serialize_client_game_request(std::get<ClientGameRequest>(packet.payload)); break; }
+        case PayloadType::ClientReconnectRequest:   { payload_bytes = serialize_client_reconnect_request(std::get<ClientReconnectRequest>(packet.payload)); break; }
+        case PayloadType::ClientInput:              { payload_bytes = serialize_client_input(std::get<ClientInput>(packet.payload)); break; }
         default:
-            std::cerr << "[PacketStreamClient] Unknown PayloadType. The data can not be sent." << "\n";
-
+        {
+            std::cerr << "[PacketStreamClient] Invalid PayloadType: "
+                      << static_cast<uint32_t>(packet.header.payload_type) << "\n"
+                      << "[PacketStreamClient] the packet can not be sent" << "\n";
             return false;
+        }
     }
 
     PacketHeader header = packet.header;
@@ -179,74 +128,234 @@ void PacketStreamClient::receive_loop() {
 void PacketStreamClient::process_buffer() {
     size_t offset = 0;
 
-    /*
-        Only process if there is more data in the buffer
-        than the size of the packet header
-    */
     while (m_buffer.size() - offset >= PACKET_HEADER_SIZE)
     {
         PacketHeader header = {};
 
-        // Read magic number
-        memcpy(
-            &header,
-            m_buffer.data() + offset,
-            PACKET_HEADER_SIZE
-        );
+        memcpy(&header, m_buffer.data() + offset, PACKET_HEADER_SIZE);
 
-        // Check magic number
         if (header.magic_number != PACKET_MAGIC_NUMBER)
         {
-            // Increment the offset and retry
             offset++;
-
             continue;
         }
 
-        // The packet receive is incomplete
         if (m_buffer.size() - offset < PACKET_HEADER_SIZE + header.payload_size)
         {
             break;
         }
 
-        // Read the payload
         auto payload_start = m_buffer.begin() + offset + PACKET_HEADER_SIZE;
-        auto payload_end = m_buffer.begin() + offset + PACKET_HEADER_SIZE + header.payload_size;
-
-        std::vector<std::byte> payload(payload_start, payload_end);
+        auto payload_end = payload_start + header.payload_size;
 
         const auto payload_type = static_cast<PayloadType>(header.payload_type);
+        std::vector<std::byte> payload(payload_start, payload_end);
+        std::optional<PacketPayload> message;
 
-        // Deserialize the payload and push it onto the queue
         switch (payload_type)
         {
-            // Frame snapshot
+            case PayloadType::ServerAccept:             { if (auto opt = deserialize_server_accept(payload)) message = *opt; break; }
+            case PayloadType::ServerGoodBye:            { if (auto opt = deserialize_server_goodbye(payload)) message = *opt; break; }
+            case PayloadType::ServerGameResponse:       { if (auto opt = deserialize_server_game_response(payload)) message = *opt; break; }
+            case PayloadType::ServerReconnectResponse:  { if (auto opt = deserialize_server_reconnect_response(payload)) message = *opt; break; }
             case PayloadType::FrameSnapshot:
             {
-                auto frame_opt = deserialize_frame(payload);
-
-                if (frame_opt.has_value())
+                if (auto opt = deserialize_frame(payload))
                 {
                     std::lock_guard<std::mutex> lock(m_frame_mutex);
-
-                    m_frame_queue.push(frame_opt.value());
+                    m_frame_queue.push(*opt);
                 }
-                else
-                {
-                    std::cerr << "[PacketStreamClient] Failed to deserialize payload" << "\n";
-                }
-
                 break;
             }
-
             default:
-                std::cerr << "[PacketStreamClient] Unknown packet type: " << static_cast<uint32_t>(header.payload_type) << "\n";
+            {
+                std::cerr << "[PacketStreamClient] Invalid payload type: " 
+                          << static_cast<uint32_t>(payload_type) << "\n"
+                          << "[PacketStreamClient] Failed to process the buffer" << "\n";
+                break;
+            }
+        }
+
+        if (message.has_value())
+        {
+            std::lock_guard<std::mutex> lock(m_message_mutex);
+            m_message_queue.push(*message);
         }
 
         offset += PACKET_HEADER_SIZE + header.payload_size;
     }
 
-    // Erase
+    if (offset > 0)
+    {
+        m_buffer.erase(m_buffer.begin(), m_buffer.begin() + offset);
+    }
+}
+
+/*
+    Server
+*/
+PacketStreamServer::PacketStreamServer(std::shared_ptr<ClientConnection> connection)
+    : m_connection(std::move(connection))
+    , m_running(false)
+{}
+
+PacketStreamServer::~PacketStreamServer() {
+    stop();
+}
+
+void PacketStreamServer::start() {
+    if (!m_running)
+    {
+        m_running = true;
+        m_recv_thread = std::thread(&PacketStreamServer::receive_loop, this);
+        std::cout << "[PacketStreamServer] Receive thread started" << "\n";
+    }
+}
+
+void PacketStreamServer::stop() {
+    if (m_running)
+    {
+        m_running = false;
+        m_connection->disconnect();
+
+        if (m_recv_thread.joinable())
+        {
+            m_recv_thread.join();
+            std::cout << "[PacketStreamServer] Receive thread stopped" << "\n";
+        }
+    }
+}
+
+bool PacketStreamServer::send_packet(const Packet& packet) {
+    std::vector<std::byte> payload_bytes;
+
+    switch (packet.header.payload_type)
+    {
+        case PayloadType::ServerAccept:             { payload_bytes = serialize_server_accept(std::get<ServerAccept>(packet.payload)); break; }
+        case PayloadType::ServerGoodBye:            { payload_bytes = serialize_server_goodbye(std::get<ServerGoodBye>(packet.payload)); break; }
+        case PayloadType::ServerGameResponse:       { payload_bytes = serialize_server_game_response(std::get<ServerGameResponse>(packet.payload)); break; }
+        case PayloadType::ServerReconnectResponse:  { payload_bytes = serialize_server_reconnect_response(std::get<ServerReconnectResponse>(packet.payload)); break; }
+        case PayloadType::FrameSnapshot:
+        {
+            auto frame_bytes_opt = serialize_frame(std::get<FrameSnapshot>(packet.payload));
+
+            if (!frame_bytes_opt.has_value())
+            {
+                std::cerr << "[PacketStreamServer] Failed to serialize frame" << "\n"
+                          << "[PacketStreamServer] The data can not be sent" << "\n";
+                return false;
+            }
+            payload_bytes = frame_bytes_opt.value();
+            break;
+        }
+        default:
+        {
+            std::cerr << "[PacketStreamServer] Invalid PayloadType" << "\n"
+                      << "[PacketStreamServer] The data can not be sent" << "\n";
+            return false;
+        }
+    }
+
+    PacketHeader header = packet.header;
+    header.payload_size = static_cast<uint32_t>(payload_bytes.size());
+    header.magic_number = PACKET_MAGIC_NUMBER;
+
+    std::vector<std::byte> buffer;
+    auto header_bytes = serialize_packet_header(header);
+
+    buffer.insert(buffer.end(), header_bytes.begin(), header_bytes.end());
+    buffer.insert(buffer.end(), payload_bytes.begin(), payload_bytes.end());
+
+    return m_connection->send_data(buffer) > 0;
+}
+
+std::optional<Packet> PacketStreamServer::poll_packet() {
+    std::lock_guard<std::mutex> lock(m_packet_mutex);
+
+    if (m_packet_queue.empty())
+    {
+        return std::nullopt;
+    }
+
+    Packet packet = std::move(m_packet_queue.front());
+    m_packet_queue.pop();
+
+    return packet;
+}
+
+void PacketStreamServer::receive_loop() {
+    std::byte temp_buffer[TEMP_BUFFER_SIZE];
+
+    while (m_running)
+    {
+        ssize_t bytes_read = m_connection->recv_data(temp_buffer, TEMP_BUFFER_SIZE);
+
+        if (bytes_read <= 0)
+        {
+            continue;
+        }
+
+        m_buffer.insert(m_buffer.end(), temp_buffer, temp_buffer + bytes_read);
+
+        process_buffer();
+    }
+}
+
+void PacketStreamServer::process_buffer() {
+    size_t offset = 0;
+
+    while (m_buffer.size() - offset >= PACKET_HEADER_SIZE)
+    {
+        PacketHeader header;
+        memcpy(&header, m_buffer.data() + offset, PACKET_HEADER_SIZE);
+
+        if (header.magic_number != PACKET_MAGIC_NUMBER)
+        {
+            offset++;
+            continue;
+        }
+
+        if (m_buffer.size() - offset < PACKET_HEADER_SIZE + header.payload_size)
+        {
+            break;
+        }
+
+        auto payload_start = m_buffer.begin() + offset + PACKET_HEADER_SIZE;
+        auto payload_end   = payload_start + header.payload_size;
+
+        const auto payload_type = static_cast<PayloadType>(header.payload_type);
+        std::vector<std::byte> payload(payload_start, payload_end);
+        std::optional<PacketPayload> message;
+
+        switch (payload_type)
+        {
+            case PayloadType::ClientHello:              { if (auto opt = deserialize_client_hello(payload)) message = *opt; break; }
+            case PayloadType::ClientGoodBye:            { if (auto opt = deserialize_client_goodbye(payload)) message = *opt; break; }
+            case PayloadType::ClientGameRequest:        { if (auto opt = deserialize_client_game_request(payload)) message = *opt; break; }
+            case PayloadType::ClientReconnectRequest:   { if (auto opt = deserialize_client_reconnect_request(payload)) message = *opt; break; }
+            case PayloadType::ClientInput:              { if (auto opt = deserialize_client_input(payload)) message = *opt; break; }
+            default:
+            {
+                std::cerr << "[PacketStreamServer] Invalid payload type: " 
+                          << static_cast<uint32_t>(payload_type) << "\n"
+                          << "[PacketStreamServer] Failed to process the buffer" << "\n";
+                break;
+            }
+        }
+
+        if (message.has_value())
+        {
+            Packet pkt;
+            pkt.header = header;
+            pkt.payload = *message;
+
+            std::lock_guard<std::mutex> lock(m_packet_mutex);
+            m_packet_queue.push(std::move(pkt));
+        }
+
+        offset += PACKET_HEADER_SIZE + header.payload_size;
+    }
+
     if (offset > 0)
     {
         m_buffer.erase(m_buffer.begin(), m_buffer.begin() + offset);
