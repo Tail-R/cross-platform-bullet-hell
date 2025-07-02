@@ -15,7 +15,7 @@ public:
     void stop();
 
 private:
-    void main_loop();
+    void accept_loop();
     void handle_client();
 
     ServerSocket        m_server_socket;

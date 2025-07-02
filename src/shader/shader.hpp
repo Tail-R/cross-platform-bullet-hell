@@ -15,9 +15,9 @@ public:
     Shader(const Shader&) = delete;
     Shader& operator=(const Shader&) = delete;
     
-    // Delete move constructor and move assignment operator
-    Shader(Shader&&) = delete;
-    Shader& operator=(Shader&&) = delete;
+    // // Delete move constructor and move assignment operator
+    // Shader(Shader&&) = delete;
+    // Shader& operator=(Shader&&) = delete;
 
     void load_from_file(
         std::string_view vertex_shader_path,
