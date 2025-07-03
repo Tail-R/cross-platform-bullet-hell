@@ -6,6 +6,18 @@
 namespace {
     constexpr size_t TEMP_BUFFER_SIZE = 4096;
 
+    ssize_t wait_for_read_ready(SOCKET sock, long sec, long usec) {
+        fd_set readfds;
+        FD_ZERO(&readfds);
+        FD_SET(sock, &readfds);
+
+        timeval timeout;
+        timeout.tv_sec = sec;
+        timeout.tv_usec = usec;
+
+        return select(0, &readfds, nullptr, nullptr, &timeout);
+    }
+
     ssize_t socket_send(SOCKET sock, const std::vector<std::byte>& bytes) {
         // Check for overflow
 #ifdef _WIN32
@@ -41,18 +53,40 @@ namespace {
 #else
         size_t safe_size = size;
 #endif
-        return recv(
-            sock,
-            /*
-                Convert std::byte* into const char*
-            */
-            reinterpret_cast<char*>(buffer),
-            safe_size,
-            0
-        );
+        
+        auto result = wait_for_read_ready(sock, 1, 0);
+
+        if (result > 0)
+        {
+            return recv(
+                sock,
+                /*
+                    Convert std::byte* into const char*
+                */
+                reinterpret_cast<char*>(buffer),
+                safe_size,
+                0
+            );
+        }
+        else if (result == 0)
+        {
+            return SOCKET_RECV_TIMEOUT;
+        }
+        else
+        {
+            return SOCKET_ERROR;
+        }
     }
 
     std::optional<std::vector<std::byte>> socket_recv_exact(SOCKET sock, size_t size) {
+        auto result = wait_for_read_ready(sock, 1, 0);
+
+        // The bytestream isn't ready
+        if (result <= 0)
+        {
+            return std::nullopt;
+        }
+
         auto buffer = std::vector<std::byte>();
         buffer.reserve(size);
 
@@ -64,6 +98,18 @@ namespace {
             // Calclate the remaining size
             size_t remaining = size - buffer.size();
             size_t to_read = std::min(temp_buffer.size(), remaining);
+
+            auto result = wait_for_read_ready(sock, 0, 1000);
+
+            // The bytestream doesn't have enough bytes to read
+            if (result < 0)
+            {
+                return std::nullopt;
+            }
+            else if (result == 0)
+            {
+                continue;
+            }
 
             ssize_t received = socket_recv(sock, temp_buffer.data(), to_read);
 

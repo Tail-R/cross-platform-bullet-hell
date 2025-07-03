@@ -39,6 +39,9 @@
     using SOCKET = int;
 #endif
 
+constexpr int SOCKET_RECV_TIMEOUT = -2;
+constexpr int SOCKET_SEND_TIMEOUT = -2;
+
 class ClientSocket {
 public:
     ClientSocket(std::string_view server_addr, uint16_t server_port);
