@@ -10,6 +10,7 @@
 #include "../assets_factory/texture_factory.hpp"
 
 #include "../packet_stream/packet_stream.hpp"
+#include "../game_server/game_server.hpp"
 
 App::App()
     : m_sdl_window(nullptr)
@@ -34,8 +35,28 @@ AppResult App::run() {
     AppResult app_result;
     InputManager input_manager;
 
+    std::cout << "[App] DEBUG: App has been started" << "\n";
+
+    auto game_server_master = std::make_shared<GameServerMaster>(
+        socket_constants::SERVER_PORT,
+        socket_constants::SERVER_MAX_INSTANCES
+    );
+
+    if (!game_server_master->initialize())
+    {
+        std::cerr << "[App] Failed to initialize game server master" << "\n";
+    }
+    else
+    {
+        std::cout <<"[App] Game server master has been initialized" << "\n";
+    }
+
+    game_server_master->run();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
     auto client_socket = std::make_shared<ClientSocket>(
-        socket_constants::SERVER_ADDR,
+        socket_constants::LOOPBACK_ADDR,
         socket_constants::SERVER_PORT
     );
 
@@ -43,15 +64,15 @@ AppResult App::run() {
 
     if (!conn_result)
     {
-        std::cerr << "[App] Failed to connect to server" << "\n";
+        std::cerr << "[App] DEBUG: Failed to connect to server" << "\n";
     }
     else
     {
-        std::cout << "[App] Server connected" << "\n";
+        std::cout << "[App] DEBUG: Server connected" << "\n";
     }
 
-    PacketStreamClient psc(client_socket);
-    psc.start();
+    PacketStreamClient packet_stream(client_socket);
+    packet_stream.start();
 
     // Set viewport as display size
     SDL_DisplayMode disp_mode;
@@ -59,7 +80,7 @@ AppResult App::run() {
     glViewport(0, 0, disp_mode.w, disp_mode.h);
 
     bool quit = false;
-
+ 
     auto mf = MeshFactory();
     auto sf = ShaderFactory();
     auto tf = TextureFactory();
@@ -94,11 +115,43 @@ AppResult App::run() {
         if (input_manager.get_quit_request()) { quit = true; }
 
         auto game_input = input_manager.get_game_input();
-        if (game_input.pressed.test(static_cast<size_t>(GameAction::Shoot))) { quit = true; }
-        if (game_input.pressed.test(static_cast<size_t>(GameAction::Focus))) {}
+        if (game_input.pressed.test(static_cast<size_t>(GameAction::Shoot)))
+        {
+            quit = true;
+            std::cout << "[App] DEBUG: Quit has been pressed" << "\n"
+                      << "[App] DEBUG: Exiting the draw loop" << "\n";
+        } 
+
+        if (game_input.pressed.test(static_cast<size_t>(GameAction::Focus)))
+        {
+            ClientInput input;
+            input.client_id = 0;
+            input.frame_timestamp = 0;
+            input.direction = game_input.direction;
+
+            PacketHeader header;
+            header.magic_number = PACKET_MAGIC_NUMBER;
+            header.payload_type = PayloadType::ClientInput;
+            header.payload_size = sizeof(input);
+
+            Packet packet;
+            packet.header = header;
+            packet.payload = input;
+
+            const auto send_result = packet_stream.send_packet(packet);
+
+            if (!send_result)
+            {
+                std::cerr << "[App] ERROR: Failed to send packet" << "\n";
+            }
+            else
+            {
+                std::cout << "[App] DEBUG: A packet has been sent" << "\n";
+            }
+        }
 
         // Get frame
-        auto frame_opt = psc.poll_frame();
+        auto frame_opt = packet_stream.poll_frame();
 
         if (frame_opt.has_value())
         {
@@ -126,8 +179,8 @@ AppResult App::run() {
         SDL_GL_SwapWindow(m_sdl_window);
     }
 
-    psc.stop();
-
+    game_server_master->stop();
+    packet_stream.stop();
     client_socket->disconnect();
 
     hide_window();

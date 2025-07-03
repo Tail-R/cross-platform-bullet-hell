@@ -35,4 +35,5 @@ namespace socket_constants {
     constexpr std::string_view  SERVER_ADDR             = "150.42.11.6";
     constexpr uint16_t          SERVER_PORT             = 6198;
     constexpr uint32_t          SERVER_MAX_PACKET_SIZE  = 10 * 1024 * 1024; // 10MB
+    constexpr size_t            SERVER_MAX_INSTANCES    = 4;
 }

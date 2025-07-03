@@ -1,29 +1,166 @@
+#include <iostream>
 #include "game_server.hpp"
+#include "../packet_stream/packet_stream.hpp"
+#include "../packet_template/packet_template.hpp"
 
-GameServer::GameServer(uint16_t server_port) {
-
+/*
+    GameServerMaster
+*/
+GameServerMaster::GameServerMaster(uint16_t server_port, size_t max_instances)
+    : m_running(false)
+    , m_max_instances(max_instances)
+    , m_active_instances(0)
+{
+    m_server_socket = std::make_shared<ServerSocket>(
+        server_port
+    );
 }
 
-GameServer::~GameServer() {
-
+GameServerMaster::~GameServerMaster() {
+    stop();
 }
 
-bool GameServer::initialize() {
-
+bool GameServerMaster::initialize() {
+    return m_server_socket->initialize();
 }
 
-void GameServer::run() {
+void GameServerMaster::run() {
+    if (!m_running)
+    {
+        m_running = true;
+        m_accept_thread = std::thread(GameServerMaster::accept_loop, this);
 
+        std::cout << "[GameServer] DEBUG: Accept thread has been created" << "\n";
+    }
 }
 
-void GameServer::stop() {
+void GameServerMaster::stop() {
+    if (m_running)
+    {
+        m_running = false;
 
+        m_server_socket->disconnect();
+
+        // Accept thread
+        if (m_accept_thread.joinable())
+        { 
+            m_accept_thread.join();
+
+            std::cout << "[GameServer] DEBUG: Accept thread has been joined" << "\n";
+        }
+    }
 }
 
-void GameServer::accept_loop() {
+void GameServerMaster::accept_loop() {
+    while (m_running)
+    {
+        std::cerr << "[GameServerMaster] DEBUG: Now accept will block this thread" << "\n";
+        /*
+            Block until the client to connect
+        */
+        auto client_opt = m_server_socket->accept_client();
 
+        std::cerr << "[GameServerMaster] DEBUG: Thread is back from accept blocking" << "\n";
+
+        if (!client_opt.has_value())
+        {
+            std::cerr << "[GameServer] ERROR: Invalid connection attempt from the client" << "\n";
+
+            continue;
+        }
+
+        auto client_conn = std::make_shared<ClientConnection>(
+            std::move(client_opt.value())
+        );
+
+        std::cout << "[GameServer] DEBUG: client_conn accepted\n";
+
+        if (m_active_instances > m_max_instances)
+        {
+            std::cerr << "[GameServer] DEBUG: The maximum number of instances has been reached"
+                      << " and the client connection has been refused." << "\n";
+
+            client_conn->disconnect();
+
+            continue;
+        }
+
+        m_active_instances++;
+
+        // Create thread
+        auto worker_thread = std::thread(
+            GameServerMaster::handle_client,
+            this,
+            client_conn
+        );
+
+        worker_thread.detach();
+
+        std::cout << "[GameServer] DEBUG: Game Instance has been created" << "\n"
+                  << "[GameServer] DEBUG: " << m_active_instances << " instances are active" << "\n";
+    }
 }
 
-void GameServer::handle_client() {
+void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_conn) {
+    std::cout << "[GameServer] DEBUG: GameInstance started\n";
+    PacketStreamServer stream(client_conn);
+    stream.start();
 
+    while (m_running)
+    {
+        std::optional<Packet> packet_opt = stream.poll_packet();
+
+        if (!packet_opt.has_value())
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            continue;
+        }
+
+        Packet packet = std::move(*packet_opt);
+
+        switch (packet.header.payload_type)
+        {
+            case PayloadType::ClientHello:
+            {
+                std::cout << "[GameServer] Received ClientHello\n";
+
+                break;
+            }
+
+            case PayloadType::ClientGameRequest:
+            {
+                std::cout << "[GameServer] Received ClientGameRequest\n";
+
+                break;
+            }
+
+            case PayloadType::ClientInput:
+            {
+                std::cout << "[GameServer] Received ClientInput\n";
+
+                break;
+            }
+
+            case PayloadType::ClientGoodBye:
+            {
+                std::cout << "[GameServer] Received ClientGoodBye\n";
+
+                break;
+            }
+
+            default:
+            {
+                std::cerr << "[GameServer] Unexpected message type: "
+                          << static_cast<uint32_t>(packet.header.payload_type) << "\n";
+                break;
+            }
+        }
+    }
+
+    stream.stop();
+    client_conn->disconnect();
+
+    m_active_instances--;
+
+    std::cout << "[GameServer] DEBUG: Game Instance has been terminated successfully" << "\n";
 }

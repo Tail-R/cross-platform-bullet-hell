@@ -1,3 +1,4 @@
+#include <iostream>
 #include <array>
 #include <limits>
 #include "socket.hpp"
@@ -189,19 +190,22 @@ bool ClientSocket::connect_to_server() {
 }
 
 void ClientSocket::abort() {
-    /*
-        At this point recv returns 0 on both Windows and Linux (POSIX)
-        The 2 means to stop both reading and writing
-    */
-    shutdown(m_server_sock, 2);
+    if (m_server_connected.exchange(false))
+    {
+        /*
+            At this point recv returns 0 on both Windows and Linux (POSIX)
+            The 2 means to stop both reading and writing
+        */
+        shutdown(m_server_sock, 2);
+    }
 }
 
 void ClientSocket::disconnect() {
     if (m_server_sock != INVALID_SOCKET)
     {
+        abort();
         close_socket(m_server_sock);
         m_server_sock = INVALID_SOCKET;
-        m_server_connected = false;
     }
 }
 
@@ -248,10 +252,10 @@ ClientConnection::~ClientConnection() {
 
 ClientConnection::ClientConnection(ClientConnection&& other) noexcept
     : m_client_sock(other.m_client_sock)
-    , m_client_connected(other.m_client_connected)
+    , m_client_connected(other.m_client_connected.load())
 {
     other.m_client_sock = INVALID_SOCKET;
-    other.m_client_connected = false;
+    other.m_client_connected.store(false);
 }
 
 ClientConnection& ClientConnection::operator=(ClientConnection&& other) noexcept
@@ -263,20 +267,31 @@ ClientConnection& ClientConnection::operator=(ClientConnection&& other) noexcept
     }
 
     m_client_sock = other.m_client_sock;
-    m_client_connected = other.m_client_connected;
+    m_client_connected.store(other.m_client_connected.load());
 
     other.m_client_sock = INVALID_SOCKET;
-    other.m_client_connected = false;
+    other.m_client_connected.store(false);
 
     return *this;
+}
+
+void ClientConnection::abort() {
+    if (m_client_connected.exchange(false))
+    {
+        /*
+            At this point recv returns 0 on both Windows and Linux (POSIX)
+            The 2 means to stop both reading and writing
+        */
+        shutdown(m_client_sock, 2);
+    }
 }
 
 void ClientConnection::disconnect() {
     if (m_client_sock != INVALID_SOCKET)
     {
+        abort();
         close_socket(m_client_sock);
         m_client_sock = INVALID_SOCKET;
-        m_client_connected = false;
     }
 }
 
@@ -366,18 +381,31 @@ bool ServerSocket::initialize() {
     return true;
 }
 
+void ServerSocket::abort() {
+    if (m_initialized.exchange(false))
+    {
+        /*
+            At this point recv returns 0 on both Windows and Linux (POSIX)
+            The 2 means to stop both reading and writing
+        */
+        shutdown(m_listen_sock, 2);
+    }
+}
+
 void ServerSocket::disconnect() {
     if (m_listen_sock != INVALID_SOCKET)
     {
+        abort();
         close_socket(m_listen_sock);
         m_listen_sock = INVALID_SOCKET;
-        m_initialized = false;
     }
 }
 
 std::optional<ClientConnection> ServerSocket::accept_client() {
     if (!m_initialized)
     {
+        std::cerr << "[ServerSocket] ERROR: accept called without initialization" << "\n";
+
         return std::nullopt;
     }
     
@@ -398,6 +426,8 @@ std::optional<ClientConnection> ServerSocket::accept_client() {
 
     if (client_socket == INVALID_SOCKET)
     {
+        std::cerr << "[ServerSocket] ERROR: accept failed" << "\n";
+
         return std::nullopt;
     }
 

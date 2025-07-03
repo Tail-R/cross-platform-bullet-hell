@@ -32,7 +32,6 @@ void PacketStreamClient::stop() {
     if (m_running)
     {
         m_running = false;
-
         m_socket->abort();
 
         if (m_recv_thread.joinable())
@@ -112,7 +111,7 @@ void PacketStreamClient::receive_loop() {
 
         if (bytes_read <= 0)
         {
-            continue;
+            break;
         }
 
         m_buffer.insert(
@@ -216,7 +215,7 @@ void PacketStreamServer::stop() {
     if (m_running)
     {
         m_running = false;
-        m_connection->disconnect();
+        m_connection->abort();
 
         if (m_recv_thread.joinable())
         {
@@ -292,7 +291,7 @@ void PacketStreamServer::receive_loop() {
 
         if (bytes_read <= 0)
         {
-            continue;
+            break;
         }
 
         m_buffer.insert(m_buffer.end(), temp_buffer, temp_buffer + bytes_read);
