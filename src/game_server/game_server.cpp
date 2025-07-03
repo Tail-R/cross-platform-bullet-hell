@@ -1,4 +1,6 @@
 #include <iostream>
+#include <cmath>        // std::sqrt
+#include <algorithm>    // std::clamp
 #include "game_server.hpp"
 #include "../packet_stream/packet_stream.hpp"
 #include "../packet_template/packet_template.hpp"
@@ -126,9 +128,51 @@ void GameServerMaster::accept_loop() {
     m_ready_to_accept = false;
 }
 
+void apply_player_input(PlayerSnapshot& player, InputDirection input, float speed = 0.02) {
+    float dx = 0.0f;
+    float dy = 0.0f;
+
+    switch (input)
+    {
+        case InputDirection::Up:        { dy = +1;            break; }
+        case InputDirection::Down:      { dy = -1;            break; }
+        case InputDirection::Right:     { dx = +1;            break; }
+        case InputDirection::Left:      { dx = -1;            break; }
+        case InputDirection::UpRight:   { dx = +1; dy = +1;   break; }
+        case InputDirection::DownRight: { dx = +1; dy = -1;   break; }
+        case InputDirection::UpLeft:    { dx = -1; dy = +1;   break; }
+        case InputDirection::DownLeft:  { dx = -1; dy = -1;   break; }
+
+        default: return;
+    }
+
+    if (dx != 0 && dy != 0)
+    {
+        const float norm = std::sqrt(2.0f);
+
+        dx /= norm;
+        dy /= norm;
+    }
+
+    player.pos.x += dx * speed;
+    player.pos.y += dy * speed;
+
+    player.pos.x = std::clamp(player.pos.x, -1.0f, 1.0f);
+    player.pos.y = std::clamp(player.pos.y, -1.0f, 1.0f);
+
+    player.vel.x = dx * speed;
+    player.vel.y = dy * speed;
+}
+
 void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_conn) {
     PacketStreamServer stream(client_conn);
     stream.start();
+
+    FrameSnapshot frame = {};
+    frame.player_count = 1;
+
+    PlayerSnapshot player = {};
+    frame.player_vector.push_back(player);
 
     while (m_running)
     {
@@ -139,8 +183,6 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
             continue;
         }
-        
-        std::cout << "[GameServer] DEBUG: Received a packet" << "\n";
 
         Packet packet = std::move(*packet_opt);
 
@@ -162,7 +204,15 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
 
             case PayloadType::ClientInput:
             {
-                std::cout << "[GameServer] DEBUG: Received ClientInput\n";
+                const auto input_snapshot    = std::get<ClientInput>(packet.payload);
+                const auto input             = input_snapshot.direction;
+
+                apply_player_input(frame.player_vector[0], input);
+                // std::cout << "x: " << frame.player_vector[0].pos.x << " y: " << frame.player_vector[0].pos.y << "\n";
+                
+                const auto packet = make_packet<FrameSnapshot>(frame);
+
+                stream.send_packet(packet);
 
                 break;
             }

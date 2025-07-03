@@ -18,7 +18,7 @@ namespace {
 std::optional<std::vector<std::byte>> serialize_frame(const FrameSnapshot& frame) {
     auto player_count_validation = frame.player_count != frame.player_vector.size(); 
     auto enemy_count_validation = frame.enemy_count != frame.enemy_vector.size();
-    auto boss_count_validation = frame.bullet_count != frame.bullet_vector.size();
+    auto boss_count_validation = frame.boss_count != frame.boss_vector.size();
     auto bullet_count_validation = frame.bullet_count != frame.bullet_vector.size();
     auto item_count_validation = frame.item_count != frame.item_vector.size();
 

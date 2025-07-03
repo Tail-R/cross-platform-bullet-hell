@@ -87,7 +87,7 @@ AppResult App::run() {
 
     const auto mesh_path     = std::string(assets_constants::MESH_DIR)       + "/square.lua";
     const auto shader_path   = std::string(assets_constants::SHADER_DIR)     + "/green_aura.lua";
-    const auto texture_path  = std::string(assets_constants::TEXTURE_DIR)    + "/zmon_2001.png";
+    const auto texture_path  = std::string(assets_constants::TEXTURE_DIR)    + "/zunmon_3002.png";
 
     mf.load_mesh(mesh_path);
     sf.load_shader(shader_path);
@@ -122,43 +122,21 @@ AppResult App::run() {
                       << "[App] DEBUG: Exiting the draw loop" << "\n";
         } 
 
-        if (game_input.pressed.test(static_cast<size_t>(GameAction::Focus)))
-        {
-            ClientInput input;
-            input.client_id = 0;
-            input.frame_timestamp = 0;
-            input.direction = game_input.direction;
+        ClientInput input;
+        input.direction = game_input.direction;
 
-            PacketHeader header;
-            header.magic_number = PACKET_MAGIC_NUMBER;
-            header.payload_type = PayloadType::ClientInput;
-            header.payload_size = sizeof(input);
-
-            Packet packet;
-            packet.header = header;
-            packet.payload = input;
-
-            const auto send_result = packet_stream.send_packet(packet);
-
-            if (!send_result)
-            {
-                std::cerr << "[App] ERROR: Failed to send packet" << "\n";
-            }
-            else
-            {
-                std::cout << "[App] DEBUG: A packet has been sent" << "\n";
-            }
-        }
+        const auto packet = make_packet<ClientInput>(input);
+        const auto send_result = packet_stream.send_packet(packet);
 
         // Get frame
         auto frame_opt = packet_stream.poll_frame();
 
         if (frame_opt.has_value())
-        {
-            std::cout << "Received a packet" << "\n";
-            
+        {   
             x_offset = frame_opt.value().player_vector[0].pos.x;
             y_offset = frame_opt.value().player_vector[0].pos.y;
+
+            // std::cout << "x: " << x_offset << " y: " << y_offset << "\n";
         }
 
         auto mesh = mf.get_mesh(mesh_path);

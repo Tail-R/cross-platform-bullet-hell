@@ -12,6 +12,7 @@ namespace {
 PacketStreamClient::PacketStreamClient(std::shared_ptr<ClientSocket> socket)
     : m_socket(std::move(socket))
     , m_running(false)
+    , m_send_sequence(0)
 {}
 
 PacketStreamClient::~PacketStreamClient() {
@@ -71,6 +72,22 @@ std::optional<PacketPayload> PacketStreamClient::poll_message() {
 }
 
 bool PacketStreamClient::send_packet(const Packet& packet) {
+    const auto actual_type = get_payload_type(packet.payload);
+
+    const auto expr1 = packet.header.payload_type != actual_type;
+    const auto expr2 = packet.header.payload_type == PayloadType::Unknown;
+    const auto expr3 = actual_type == PayloadType::Unknown;
+
+    if (expr1 || expr2 || expr3)
+    {
+        std::cerr << "[PacketStreamClient] ERROR: Invalid payload, abort sending. "
+                  << "header_type=" << static_cast<int>(packet.header.payload_type)
+                  << ", actual_type=" << static_cast<int>(actual_type) << "\n";
+
+
+        return false;
+    }
+
     std::vector<std::byte> payload_bytes;
 
     switch (packet.header.payload_type)
@@ -90,11 +107,15 @@ bool PacketStreamClient::send_packet(const Packet& packet) {
     }
 
     PacketHeader header = packet.header;
-    header.payload_size = static_cast<uint32_t>(payload_bytes.size());
-    header.magic_number = PACKET_MAGIC_NUMBER;
+    
+    header.magic_number     = PACKET_MAGIC_NUMBER;
+    header.sequence_number  = m_send_sequence.fetch_add(1);
+    header.payload_size     = static_cast<uint32_t>(payload_bytes.size());
+    header.payload_type     = get_payload_type(packet.payload);
+    
+    auto header_bytes = serialize_packet_header(header);
 
     std::vector<std::byte> buffer;
-    auto header_bytes = serialize_packet_header(header);
 
     buffer.insert(buffer.end(), header_bytes.begin(), header_bytes.end());
     buffer.insert(buffer.end(), payload_bytes.begin(), payload_bytes.end());
@@ -200,6 +221,7 @@ void PacketStreamClient::process_buffer() {
 PacketStreamServer::PacketStreamServer(std::shared_ptr<ClientConnection> connection)
     : m_connection(std::move(connection))
     , m_running(false)
+    , m_send_sequence(0)
 {}
 
 PacketStreamServer::~PacketStreamServer() {
@@ -230,6 +252,22 @@ void PacketStreamServer::stop() {
 }
 
 bool PacketStreamServer::send_packet(const Packet& packet) {
+    const auto actual_type = get_payload_type(packet.payload);
+
+    const auto expr1 = packet.header.payload_type != actual_type;
+    const auto expr2 = packet.header.payload_type == PayloadType::Unknown;
+    const auto expr3 = actual_type == PayloadType::Unknown;
+
+    if (expr1 || expr2 || expr3)
+    {
+        std::cerr << "[PacketStreamServer] ERROR: Invalid payload, abort sending. "
+                  << "header_type=" << static_cast<int>(packet.header.payload_type)
+                  << ", actual_type=" << static_cast<int>(actual_type) << "\n";
+
+
+        return false;
+    }
+
     std::vector<std::byte> payload_bytes;
 
     switch (packet.header.payload_type)
@@ -260,11 +298,15 @@ bool PacketStreamServer::send_packet(const Packet& packet) {
     }
 
     PacketHeader header = packet.header;
-    header.payload_size = static_cast<uint32_t>(payload_bytes.size());
-    header.magic_number = PACKET_MAGIC_NUMBER;
+
+    header.magic_number     = PACKET_MAGIC_NUMBER;
+    header.sequence_number  = m_send_sequence.fetch_add(1);
+    header.payload_size     = static_cast<uint32_t>(payload_bytes.size());
+    header.payload_type     = get_payload_type(packet.payload);
+
+    auto header_bytes = serialize_packet_header(header);
 
     std::vector<std::byte> buffer;
-    auto header_bytes = serialize_packet_header(header);
 
     buffer.insert(buffer.end(), header_bytes.begin(), header_bytes.end());
     buffer.insert(buffer.end(), payload_bytes.begin(), payload_bytes.end());

@@ -1,6 +1,6 @@
 #include "packet_template.hpp"
 
-PayloadType Packet::payload_type() {
+PayloadType get_payload_type(const PacketPayload& payload) {
     return std::visit([](auto&& msg) -> PayloadType {
         using T = std::decay_t<decltype(msg)>;
 

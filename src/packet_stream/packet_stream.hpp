@@ -42,7 +42,9 @@ private:
     std::queue<FrameSnapshot>       m_frame_queue;
 
     std::mutex                      m_message_mutex;
-    std::queue<PacketPayload>       m_message_queue;      
+    std::queue<PacketPayload>       m_message_queue;
+
+    std::atomic<uint32_t>           m_send_sequence;
 };
 
 class PacketStreamServer {
@@ -71,4 +73,6 @@ private:
     std::vector<std::byte>              m_buffer;
     std::mutex                          m_packet_mutex;
     std::queue<Packet>                  m_packet_queue;
+
+    std::atomic<uint32_t>               m_send_sequence;
 };
