@@ -109,11 +109,15 @@ void PacketStreamClient::receive_loop() {
     {
         ssize_t bytes_read = m_socket->recv_data(temp_buffer, TEMP_BUFFER_SIZE);
 
-        if (bytes_read <= 0)
+        if (bytes_read == SOCKET_RECV_TIMEOUT)
+        {
+            continue;
+        }
+        else if (bytes_read <= 0)
         {
             break;
         }
-
+        
         m_buffer.insert(
             m_buffer.end(),
             temp_buffer,
@@ -220,7 +224,7 @@ void PacketStreamServer::stop() {
         if (m_recv_thread.joinable())
         {
             m_recv_thread.join();
-            std::cout << "[PacketStreamServer] DEBUG: Receive thread stopped" << "\n";
+            std::cout << "[PacketStreamServer] DEBUG: Receive thread has been joined" << "\n";
         }
     }
 }
@@ -289,7 +293,11 @@ void PacketStreamServer::receive_loop() {
     {
         ssize_t bytes_read = m_connection->recv_data(temp_buffer, TEMP_BUFFER_SIZE);
 
-        if (bytes_read <= 0)
+        if (bytes_read == SOCKET_RECV_TIMEOUT)
+        {
+            continue;
+        }
+        else if (bytes_read <= 0)
         {
             break;
         }

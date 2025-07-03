@@ -83,7 +83,7 @@ void GameServerMaster::accept_loop() {
         m_ready_to_accept = true;
         auto client_opt = m_server_socket->accept_client();
 
-        std::cerr << "[GameServerMaster] DEBUG: Thread is back from accept blocking" << "\n";
+        std::cerr << "[GameServerMaster] DEBUG: Thread is back from accept" << "\n";
 
         if (!client_opt.has_value())
         {
@@ -127,7 +127,6 @@ void GameServerMaster::accept_loop() {
 }
 
 void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_conn) {
-    std::cout << "[GameServer] DEBUG: GameInstance started\n";
     PacketStreamServer stream(client_conn);
     stream.start();
 
@@ -140,6 +139,8 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
             continue;
         }
+        
+        std::cout << "[GameServer] DEBUG: Received a packet" << "\n";
 
         Packet packet = std::move(*packet_opt);
 
@@ -147,35 +148,35 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
         {
             case PayloadType::ClientHello:
             {
-                std::cout << "[GameServer] Received ClientHello\n";
+                std::cout << "[GameServer] DEBUG: Received ClientHello\n";
 
                 break;
             }
 
             case PayloadType::ClientGameRequest:
             {
-                std::cout << "[GameServer] Received ClientGameRequest\n";
+                std::cout << "[GameServer] DEBUG: Received ClientGameRequest\n";
 
                 break;
             }
 
             case PayloadType::ClientInput:
             {
-                std::cout << "[GameServer] Received ClientInput\n";
+                std::cout << "[GameServer] DEBUG: Received ClientInput\n";
 
                 break;
             }
 
             case PayloadType::ClientGoodBye:
             {
-                std::cout << "[GameServer] Received ClientGoodBye\n";
+                std::cout << "[GameServer] DEBUG: Received ClientGoodBye\n";
 
                 break;
             }
 
             default:
             {
-                std::cerr << "[GameServer] Unexpected message type: "
+                std::cerr << "[GameServer] DEBUG: Unexpected message type: "
                           << static_cast<uint32_t>(packet.header.payload_type) << "\n";
                 break;
             }
