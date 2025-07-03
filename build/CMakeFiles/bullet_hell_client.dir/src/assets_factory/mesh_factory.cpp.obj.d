@@ -132,6 +132,9 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/mesh_factory.cpp.obj: \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/sol.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/version.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/config.hpp \
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/prologue.hpp \
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/epilogue.hpp \
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/detail/build_version.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/forward.hpp \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/utility \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_relops.h \
@@ -146,12 +149,26 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/mesh_factory.cpp.obj: \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cstddef \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/bind_traits.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/pointer_like.hpp \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/memory \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_construct.h \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_uninitialized.h \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_tempbuf.h \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_raw_storage_iter.h \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/ext/concurrence.h \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/unique_ptr.h \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/shared_ptr.h \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/shared_ptr_base.h \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/allocated_ptr.h \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/refwrap.h \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/ext/aligned_buffer.h \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/shared_ptr_atomic.h \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/atomic_base.h \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/atomic_lockfree_defines.h \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward/auto_ptr.h \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/string_view.hpp \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/functional \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/refwrap.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/std_function.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/unordered_map \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/ext/aligned_buffer.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/hashtable.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/hashtable_policy.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/node_handle.h \
@@ -159,31 +176,18 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/mesh_factory.cpp.obj: \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/enable_special_members.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/unordered_map.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/vector \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_construct.h \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_uninitialized.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_vector.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_bvector.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/vector.tcc \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_algo.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/algorithmfwd.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_heap.h \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_tempbuf.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/uniform_int_dist.h \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/memory \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_raw_storage_iter.h \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/ext/concurrence.h \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/unique_ptr.h \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/shared_ptr.h \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/shared_ptr_base.h \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/allocated_ptr.h \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/shared_ptr_atomic.h \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/atomic_base.h \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/atomic_lockfree_defines.h \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward/auto_ptr.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/iterator \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stream_iterator.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/variant \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/parse_numbers.h \
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/assert.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/bytecode.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/compatibility.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/compatibility/lua_version.hpp \
@@ -195,6 +199,7 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/mesh_factory.cpp.obj: \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/external/LuaJIT/src/luaconf.h \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/external/LuaJIT/src/lauxlib.h \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/external/LuaJIT/src/lualib.h \
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/external/LuaJIT/src/luajit.h \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/external/LuaJIT/src/luajit.h \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/compatibility/compat-5.3.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/x86_64-w64-mingw32/include/string.h \
@@ -270,6 +275,7 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/mesh_factory.cpp.obj: \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/stack_get_unqualified.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/overload.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/unicode.hpp \
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/abort.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/stack_get_qualified.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/stack_check_get.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/stack_check_get_unqualified.hpp \
@@ -317,6 +323,8 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/mesh_factory.cpp.obj: \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/table_core.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/table_proxy.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/table_iterator.hpp \
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/pairs_iterator.hpp \
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/stack/detail/pairs.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/table.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/lua_table.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/state.hpp \

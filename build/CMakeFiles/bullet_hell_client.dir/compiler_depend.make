@@ -1083,8 +1083,10 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/mesh_factory.cpp.obj: C:/Us
   C:/Program\ Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/x86_64-w64-mingw32/include/vadefs.h \
   C:/Program\ Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/x86_64-w64-mingw32/include/wchar.h \
   C:/Program\ Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/x86_64-w64-mingw32/include/wctype.h \
+  _deps/sol2-src/include/sol/abort.hpp \
   _deps/sol2-src/include/sol/as_args.hpp \
   _deps/sol2-src/include/sol/as_returns.hpp \
+  _deps/sol2-src/include/sol/assert.hpp \
   _deps/sol2-src/include/sol/base_traits.hpp \
   _deps/sol2-src/include/sol/bind_traits.hpp \
   _deps/sol2-src/include/sol/bytecode.hpp \
@@ -1098,9 +1100,11 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/mesh_factory.cpp.obj: C:/Us
   _deps/sol2-src/include/sol/coroutine.hpp \
   _deps/sol2-src/include/sol/demangle.hpp \
   _deps/sol2-src/include/sol/deprecate.hpp \
+  _deps/sol2-src/include/sol/detail/build_version.hpp \
   _deps/sol2-src/include/sol/dump_handler.hpp \
   _deps/sol2-src/include/sol/ebco.hpp \
   _deps/sol2-src/include/sol/environment.hpp \
+  _deps/sol2-src/include/sol/epilogue.hpp \
   _deps/sol2-src/include/sol/error.hpp \
   _deps/sol2-src/include/sol/error_handler.hpp \
   _deps/sol2-src/include/sol/forward.hpp \
@@ -1125,8 +1129,10 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/mesh_factory.cpp.obj: C:/Us
   _deps/sol2-src/include/sol/optional.hpp \
   _deps/sol2-src/include/sol/optional_implementation.hpp \
   _deps/sol2-src/include/sol/overload.hpp \
+  _deps/sol2-src/include/sol/pairs_iterator.hpp \
   _deps/sol2-src/include/sol/pointer_like.hpp \
   _deps/sol2-src/include/sol/policies.hpp \
+  _deps/sol2-src/include/sol/prologue.hpp \
   _deps/sol2-src/include/sol/property.hpp \
   _deps/sol2-src/include/sol/protect.hpp \
   _deps/sol2-src/include/sol/protected_function.hpp \
@@ -1138,6 +1144,7 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/mesh_factory.cpp.obj: C:/Us
   _deps/sol2-src/include/sol/resolve.hpp \
   _deps/sol2-src/include/sol/sol.hpp \
   _deps/sol2-src/include/sol/stack.hpp \
+  _deps/sol2-src/include/sol/stack/detail/pairs.hpp \
   _deps/sol2-src/include/sol/stack_check.hpp \
   _deps/sol2-src/include/sol/stack_check_get.hpp \
   _deps/sol2-src/include/sol/stack_check_get_qualified.hpp \
@@ -1417,8 +1424,10 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/shader_factory.cpp.obj: C:/
   C:/Program\ Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/x86_64-w64-mingw32/include/vadefs.h \
   C:/Program\ Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/x86_64-w64-mingw32/include/wchar.h \
   C:/Program\ Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/x86_64-w64-mingw32/include/wctype.h \
+  _deps/sol2-src/include/sol/abort.hpp \
   _deps/sol2-src/include/sol/as_args.hpp \
   _deps/sol2-src/include/sol/as_returns.hpp \
+  _deps/sol2-src/include/sol/assert.hpp \
   _deps/sol2-src/include/sol/base_traits.hpp \
   _deps/sol2-src/include/sol/bind_traits.hpp \
   _deps/sol2-src/include/sol/bytecode.hpp \
@@ -1432,9 +1441,11 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/shader_factory.cpp.obj: C:/
   _deps/sol2-src/include/sol/coroutine.hpp \
   _deps/sol2-src/include/sol/demangle.hpp \
   _deps/sol2-src/include/sol/deprecate.hpp \
+  _deps/sol2-src/include/sol/detail/build_version.hpp \
   _deps/sol2-src/include/sol/dump_handler.hpp \
   _deps/sol2-src/include/sol/ebco.hpp \
   _deps/sol2-src/include/sol/environment.hpp \
+  _deps/sol2-src/include/sol/epilogue.hpp \
   _deps/sol2-src/include/sol/error.hpp \
   _deps/sol2-src/include/sol/error_handler.hpp \
   _deps/sol2-src/include/sol/forward.hpp \
@@ -1459,8 +1470,10 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/shader_factory.cpp.obj: C:/
   _deps/sol2-src/include/sol/optional.hpp \
   _deps/sol2-src/include/sol/optional_implementation.hpp \
   _deps/sol2-src/include/sol/overload.hpp \
+  _deps/sol2-src/include/sol/pairs_iterator.hpp \
   _deps/sol2-src/include/sol/pointer_like.hpp \
   _deps/sol2-src/include/sol/policies.hpp \
+  _deps/sol2-src/include/sol/prologue.hpp \
   _deps/sol2-src/include/sol/property.hpp \
   _deps/sol2-src/include/sol/protect.hpp \
   _deps/sol2-src/include/sol/protected_function.hpp \
@@ -1472,6 +1485,7 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/shader_factory.cpp.obj: C:/
   _deps/sol2-src/include/sol/resolve.hpp \
   _deps/sol2-src/include/sol/sol.hpp \
   _deps/sol2-src/include/sol/stack.hpp \
+  _deps/sol2-src/include/sol/stack/detail/pairs.hpp \
   _deps/sol2-src/include/sol/stack_check.hpp \
   _deps/sol2-src/include/sol/stack_check_get.hpp \
   _deps/sol2-src/include/sol/stack_check_get_qualified.hpp \
@@ -3901,6 +3915,7 @@ CMakeFiles/bullet_hell_client.dir/src/packet_stream/packet_stream.cpp.obj: C:/Us
   C:/Program\ Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cstdint \
   C:/Program\ Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cstdio \
   C:/Program\ Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cstdlib \
+  C:/Program\ Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cstring \
   C:/Program\ Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/ctime \
   C:/Program\ Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cwchar \
   C:/Program\ Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cwctype \
@@ -6764,9 +6779,13 @@ C:/Program\ Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/lib/gcc/x8
 
 C:/Program\ Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32/bits/time_members.h:
 
+_deps/sol2-src/include/sol/abort.hpp:
+
 _deps/sol2-src/include/sol/as_args.hpp:
 
 _deps/sol2-src/include/sol/as_returns.hpp:
+
+_deps/sol2-src/include/sol/assert.hpp:
 
 _deps/sol2-src/include/sol/bytecode.hpp:
 
@@ -6782,7 +6801,13 @@ _deps/sol2-src/include/sol/demangle.hpp:
 
 _deps/sol2-src/include/sol/deprecate.hpp:
 
+_deps/sol2-src/include/sol/detail/build_version.hpp:
+
 _deps/sol2-src/include/sol/dump_handler.hpp:
+
+_deps/sol2-src/include/sol/stack_get_qualified.hpp:
+
+_deps/sol2-src/include/sol/epilogue.hpp:
 
 _deps/sol2-src/include/sol/error_handler.hpp:
 
@@ -6812,7 +6837,11 @@ _deps/sol2-src/include/sol/object_base.hpp:
 
 _deps/sol2-src/include/sol/overload.hpp:
 
+_deps/sol2-src/include/sol/pairs_iterator.hpp:
+
 _deps/sol2-src/include/sol/pointer_like.hpp:
+
+_deps/sol2-src/include/sol/prologue.hpp:
 
 _deps/sol2-src/include/sol/property.hpp:
 
@@ -6826,13 +6855,13 @@ _deps/sol2-src/include/sol/proxy_base.hpp:
 
 _deps/sol2-src/include/sol/raii.hpp:
 
+_deps/sol2-src/include/sol/stack/detail/pairs.hpp:
+
 _deps/sol2-src/include/sol/stack_check.hpp:
 
 _deps/sol2-src/include/sol/stack_check_get.hpp:
 
 _deps/sol2-src/include/sol/stack_check_get_unqualified.hpp:
-
-_deps/sol2-src/include/sol/stack_get_qualified.hpp:
 
 _deps/sol2-src/include/sol/stack_iterator.hpp:
 

@@ -38,26 +38,26 @@ AppResult App::run() {
 
     std::cout << "[App] DEBUG: App has been started" << "\n";
 
-    auto game_server_master = std::make_shared<GameServerMaster>(
-        socket_constants::LOCAL_SERVER_PORT,
-        socket_constants::SERVER_MAX_INSTANCES
-    );
+    // auto game_server_master = std::make_shared<GameServerMaster>(
+    //     socket_constants::LOCAL_SERVER_PORT,
+    //     socket_constants::SERVER_MAX_INSTANCES
+    // );
 
-    if (!game_server_master->initialize())
-    {
-        std::cerr << "[App] Failed to initialize game server master" << "\n";
-    }
-    else
-    {
-        std::cout <<"[App] Game server master has been initialized" << "\n";
-    }
+    // if (!game_server_master->initialize())
+    // {
+    //     std::cerr << "[App] Failed to initialize game server master" << "\n";
+    // }
+    // else
+    // {
+    //     std::cout <<"[App] Game server master has been initialized" << "\n";
+    // }
 
-    game_server_master->run();
-    game_server_master->wait_for_accept_ready(1000, 10);
+    // game_server_master->run();
+    // game_server_master->wait_for_accept_ready(1000, 10);
 
     auto client_socket = std::make_shared<ClientSocket>(
-        socket_constants::LOCAL_SERVER_ADDR,
-        socket_constants::LOCAL_SERVER_PORT
+        socket_constants::SERVER_ADDR,
+        socket_constants::SERVER_PORT
     );
 
     const auto conn_result = client_socket->connect_to_server();
@@ -135,8 +135,6 @@ AppResult App::run() {
         {   
             x_offset = frame_opt.value().player_vector[0].pos.x;
             y_offset = frame_opt.value().player_vector[0].pos.y;
-
-            // std::cout << "x: " << x_offset << " y: " << y_offset << "\n";
         }
 
         auto mesh = mf.get_mesh(mesh_path);
@@ -157,7 +155,7 @@ AppResult App::run() {
         SDL_GL_SwapWindow(m_sdl_window);
     }
 
-    game_server_master->stop();
+    // game_server_master->stop();
     packet_stream.stop();
     client_socket->disconnect();
 

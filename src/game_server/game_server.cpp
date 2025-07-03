@@ -31,7 +31,7 @@ void GameServerMaster::run() {
     if (!m_running)
     {
         m_running = true;
-        m_accept_thread = std::thread(GameServerMaster::accept_loop, this);
+        m_accept_thread = std::thread(&GameServerMaster::accept_loop, this);
 
         std::cout << "[GameServer] DEBUG: Accept thread has been created" << "\n";
     }
@@ -114,7 +114,7 @@ void GameServerMaster::accept_loop() {
 
         // Create thread
         auto worker_thread = std::thread(
-            GameServerMaster::handle_client,
+            &GameServerMaster::handle_client,
             this,
             client_conn
         );

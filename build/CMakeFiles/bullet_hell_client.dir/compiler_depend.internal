@@ -1086,8 +1086,10 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/mesh_factory.cpp.obj
  C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/x86_64-w64-mingw32/include/vadefs.h
  C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/x86_64-w64-mingw32/include/wchar.h
  C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/x86_64-w64-mingw32/include/wctype.h
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/abort.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/as_args.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/as_returns.hpp
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/assert.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/base_traits.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/bind_traits.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/bytecode.hpp
@@ -1101,9 +1103,11 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/mesh_factory.cpp.obj
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/coroutine.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/demangle.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/deprecate.hpp
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/detail/build_version.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/dump_handler.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/ebco.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/environment.hpp
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/epilogue.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/error.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/error_handler.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/forward.hpp
@@ -1128,8 +1132,10 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/mesh_factory.cpp.obj
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/optional.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/optional_implementation.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/overload.hpp
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/pairs_iterator.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/pointer_like.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/policies.hpp
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/prologue.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/property.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/protect.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/protected_function.hpp
@@ -1141,6 +1147,7 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/mesh_factory.cpp.obj
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/resolve.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/sol.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/stack.hpp
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/stack/detail/pairs.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/stack_check.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/stack_check_get.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/stack_check_get_qualified.hpp
@@ -1421,8 +1428,10 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/shader_factory.cpp.obj
  C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/x86_64-w64-mingw32/include/vadefs.h
  C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/x86_64-w64-mingw32/include/wchar.h
  C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/x86_64-w64-mingw32/include/wctype.h
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/abort.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/as_args.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/as_returns.hpp
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/assert.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/base_traits.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/bind_traits.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/bytecode.hpp
@@ -1436,9 +1445,11 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/shader_factory.cpp.obj
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/coroutine.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/demangle.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/deprecate.hpp
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/detail/build_version.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/dump_handler.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/ebco.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/environment.hpp
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/epilogue.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/error.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/error_handler.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/forward.hpp
@@ -1463,8 +1474,10 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/shader_factory.cpp.obj
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/optional.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/optional_implementation.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/overload.hpp
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/pairs_iterator.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/pointer_like.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/policies.hpp
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/prologue.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/property.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/protect.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/protected_function.hpp
@@ -1476,6 +1489,7 @@ CMakeFiles/bullet_hell_client.dir/src/assets_factory/shader_factory.cpp.obj
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/resolve.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/sol.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/stack.hpp
+ C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/stack/detail/pairs.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/stack_check.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/stack_check_get.hpp
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include/sol/stack_check_get_qualified.hpp
@@ -3917,6 +3931,7 @@ CMakeFiles/bullet_hell_client.dir/src/packet_stream/packet_stream.cpp.obj
  C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cstdint
  C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cstdio
  C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cstdlib
+ C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cstring
  C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/ctime
  C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cwchar
  C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cwctype

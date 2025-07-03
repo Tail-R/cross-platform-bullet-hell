@@ -15,7 +15,7 @@ namespace {
         timeout.tv_sec = sec;
         timeout.tv_usec = usec;
 
-        return select(0, &readfds, nullptr, nullptr, &timeout);
+        return select(sock + 1, &readfds, nullptr, nullptr, &timeout);
     }
 
     ssize_t socket_send(SOCKET sock, const std::vector<std::byte>& bytes) {

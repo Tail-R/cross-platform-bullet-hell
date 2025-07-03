@@ -52,6 +52,7 @@ CMakeFiles/bullet_hell_client.dir/src/packet_template/packet_template.cpp.obj: \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cstdint \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/stdint.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/x86_64-w64-mingw32/include/stdint.h \
+ C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cstddef \
  C:\Users\tailr\Documents\WorkSpaces\CPP\cross-platform-bullet-hell\src\packet_template\greeting.hpp \
  C:\Users\tailr\Documents\WorkSpaces\CPP\cross-platform-bullet-hell\src\packet_template\greeting/greeting_structs.hpp \
  C:\Users\tailr\Documents\WorkSpaces\CPP\cross-platform-bullet-hell\src\packet_template\greeting/greeting_enums.hpp \
@@ -130,7 +131,6 @@ CMakeFiles/bullet_hell_client.dir/src/packet_template/packet_template.cpp.obj: \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_vector.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_bvector.h \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/vector.tcc \
- C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cstddef \
  C:\Users\tailr\Documents\WorkSpaces\CPP\cross-platform-bullet-hell\src\packet_template\input.hpp \
  C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/src/input_manager/input_snapshot.hpp \
  C:/PROGRA~1/MINGW-~1/X86_64~1.0-P/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bitset

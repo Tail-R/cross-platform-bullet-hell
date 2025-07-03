@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 
 // A Magic number to synchronize the byte stream
 constexpr uint32_t PACKET_MAGIC_NUMBER = 0x7F3B29D1;

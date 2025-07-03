@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 #include "packet_stream.hpp"
 #include "../packet_serializer/packet_serializer.hpp"
 

@@ -52,13 +52,13 @@ endif()
 
 execute_process(
   COMMAND "C:/Program Files/Git/cmd/git.exe"
-          checkout "v3.2.2" --
+          checkout "v3.5.0" --
   WORKING_DIRECTORY "C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src"
   RESULT_VARIABLE error_code
   ${maybe_show_command}
 )
 if(error_code)
-  message(FATAL_ERROR "Failed to checkout tag: 'v3.2.2'")
+  message(FATAL_ERROR "Failed to checkout tag: 'v3.5.0'")
 endif()
 
 set(init_submodules TRUE)

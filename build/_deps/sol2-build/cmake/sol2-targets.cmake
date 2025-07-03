@@ -19,7 +19,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_cmake_targets_defined "")
 set(_cmake_targets_not_defined "")
 set(_cmake_expected_targets "")
-foreach(_cmake_expected_target IN ITEMS sol2::sol2)
+foreach(_cmake_expected_target IN ITEMS sol2)
   list(APPEND _cmake_expected_targets "${_cmake_expected_target}")
   if(TARGET "${_cmake_expected_target}")
     list(APPEND _cmake_targets_defined "${_cmake_expected_target}")
@@ -46,10 +46,10 @@ unset(_cmake_targets_not_defined)
 unset(_cmake_expected_targets)
 
 
-# Create imported target sol2::sol2
-add_library(sol2::sol2 INTERFACE IMPORTED)
+# Create imported target sol2
+add_library(sol2 INTERFACE IMPORTED)
 
-set_target_properties(sol2::sol2 PROPERTIES
+set_target_properties(sol2 PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "C:/Users/tailr/Documents/WorkSpaces/CPP/cross-platform-bullet-hell/build/_deps/sol2-src/include"
 )
 
