@@ -406,6 +406,8 @@ bool ServerSocket::initialize() {
 
     if (bind_result == SOCKET_ERROR)
     {
+        std::cerr << "[ServerSocket] ERROR: Failed to bind address to the listen socket" << "\n";
+
         close_socket(m_listen_sock);
         return false;
     }
@@ -418,6 +420,8 @@ bool ServerSocket::initialize() {
 
     if (listen_result == SOCKET_ERROR)
     {
+        std::cerr << "[ServerSocket] ERROR: Failed to start listening on socket" << "\n";
+
         close_socket(m_listen_sock);
         return false;
     }
@@ -472,7 +476,7 @@ std::optional<ClientConnection> ServerSocket::accept_client() {
 
     if (client_socket == INVALID_SOCKET)
     {
-        std::cerr << "[ServerSocket] ERROR: accept failed" << "\n";
+        std::cerr << "[ServerSocket] ERROR: Accept failed with error code: " << WSAGetLastError() << "\n"; 
 
         return std::nullopt;
     }

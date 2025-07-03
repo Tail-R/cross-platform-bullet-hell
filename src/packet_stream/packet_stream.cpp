@@ -207,7 +207,7 @@ void PacketStreamServer::start() {
     {
         m_running = true;
         m_recv_thread = std::thread(&PacketStreamServer::receive_loop, this);
-        std::cout << "[PacketStreamServer] Receive thread started" << "\n";
+        std::cout << "[PacketStreamServer] DEBUG: Receive thread started" << "\n";
     }
 }
 
@@ -220,7 +220,7 @@ void PacketStreamServer::stop() {
         if (m_recv_thread.joinable())
         {
             m_recv_thread.join();
-            std::cout << "[PacketStreamServer] Receive thread stopped" << "\n";
+            std::cout << "[PacketStreamServer] DEBUG: Receive thread stopped" << "\n";
         }
     }
 }
@@ -240,8 +240,8 @@ bool PacketStreamServer::send_packet(const Packet& packet) {
 
             if (!frame_bytes_opt.has_value())
             {
-                std::cerr << "[PacketStreamServer] Failed to serialize frame" << "\n"
-                          << "[PacketStreamServer] The data can not be sent" << "\n";
+                std::cerr << "[PacketStreamServer] ERROR: Failed to serialize frame" << "\n"
+                          << "[PacketStreamServer] ERROR: The data can not be sent" << "\n";
                 return false;
             }
             payload_bytes = frame_bytes_opt.value();
@@ -249,8 +249,8 @@ bool PacketStreamServer::send_packet(const Packet& packet) {
         }
         default:
         {
-            std::cerr << "[PacketStreamServer] Invalid PayloadType" << "\n"
-                      << "[PacketStreamServer] The data can not be sent" << "\n";
+            std::cerr << "[PacketStreamServer] ERROR: Invalid PayloadType" << "\n"
+                      << "[PacketStreamServer] ERROR: The data can not be sent" << "\n";
             return false;
         }
     }
@@ -335,9 +335,9 @@ void PacketStreamServer::process_buffer() {
             case PayloadType::ClientInput:              { if (auto opt = deserialize_client_input(payload)) message = *opt; break; }
             default:
             {
-                std::cerr << "[PacketStreamServer] Invalid payload type: " 
+                std::cerr << "[PacketStreamServer] ERROR: Invalid payload type: " 
                           << static_cast<uint32_t>(payload_type) << "\n"
-                          << "[PacketStreamServer] Failed to process the buffer" << "\n";
+                          << "[PacketStreamServer] ERROR: Failed to process the buffer" << "\n";
                 break;
             }
         }

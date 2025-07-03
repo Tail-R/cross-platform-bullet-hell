@@ -14,6 +14,7 @@ public:
     bool initialize();
     void run();
     void stop();
+    bool wait_for_accept_ready(size_t timeout_msec, size_t max_attempts);
 
 private:
     void accept_loop();
@@ -21,6 +22,7 @@ private:
 
     std::shared_ptr<ServerSocket>   m_server_socket;
     std::atomic<bool>               m_running;
+    std::atomic<bool>               m_ready_to_accept;
     std::thread                     m_accept_thread;
     size_t                          m_max_instances;
     std::atomic<size_t>             m_active_instances;

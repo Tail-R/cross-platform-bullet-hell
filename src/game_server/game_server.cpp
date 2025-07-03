@@ -7,7 +7,8 @@
     GameServerMaster
 */
 GameServerMaster::GameServerMaster(uint16_t server_port, size_t max_instances)
-    : m_running(false)
+    : m_ready_to_accept(false)
+    , m_running(false)
     , m_max_instances(max_instances)
     , m_active_instances(0)
 {
@@ -51,6 +52,27 @@ void GameServerMaster::stop() {
     }
 }
 
+bool GameServerMaster::wait_for_accept_ready(size_t timeout_msec, size_t max_attempts) {
+    size_t attempt = 0;
+
+    while (true)
+    {
+        attempt++;
+
+        if (m_ready_to_accept)
+        {
+            return true;
+        }
+
+        if (attempt > max_attempts)
+        {
+            return false;
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(timeout_msec));
+    }
+}
+
 void GameServerMaster::accept_loop() {
     while (m_running)
     {
@@ -58,6 +80,7 @@ void GameServerMaster::accept_loop() {
         /*
             Block until the client to connect
         */
+        m_ready_to_accept = true;
         auto client_opt = m_server_socket->accept_client();
 
         std::cerr << "[GameServerMaster] DEBUG: Thread is back from accept blocking" << "\n";
@@ -75,7 +98,7 @@ void GameServerMaster::accept_loop() {
 
         std::cout << "[GameServer] DEBUG: client_conn accepted\n";
 
-        if (m_active_instances > m_max_instances)
+        if (m_active_instances >= m_max_instances)
         {
             std::cerr << "[GameServer] DEBUG: The maximum number of instances has been reached"
                       << " and the client connection has been refused." << "\n";
@@ -85,7 +108,7 @@ void GameServerMaster::accept_loop() {
             continue;
         }
 
-        m_active_instances++;
+        m_active_instances.fetch_add(1);
 
         // Create thread
         auto worker_thread = std::thread(
@@ -99,6 +122,8 @@ void GameServerMaster::accept_loop() {
         std::cout << "[GameServer] DEBUG: Game Instance has been created" << "\n"
                   << "[GameServer] DEBUG: " << m_active_instances << " instances are active" << "\n";
     }
+
+    m_ready_to_accept = false;
 }
 
 void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_conn) {
@@ -160,7 +185,7 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
     stream.stop();
     client_conn->disconnect();
 
-    m_active_instances--;
+    m_active_instances.fetch_sub(1);
 
     std::cout << "[GameServer] DEBUG: Game Instance has been terminated successfully" << "\n";
 }

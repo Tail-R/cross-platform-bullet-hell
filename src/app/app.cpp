@@ -18,6 +18,7 @@ App::App()
     , m_sdl_initialized(false)
     , m_sdl_gl_initialized(false)
 {
+
     start_async_logger(logger_constants::LOG_FILE_NAME.data());
     async_log(LogLevel::Info, "------------------------------");
     async_log(LogLevel::Info, "App has been started");
@@ -38,7 +39,7 @@ AppResult App::run() {
     std::cout << "[App] DEBUG: App has been started" << "\n";
 
     auto game_server_master = std::make_shared<GameServerMaster>(
-        socket_constants::SERVER_PORT,
+        socket_constants::LOCAL_SERVER_PORT,
         socket_constants::SERVER_MAX_INSTANCES
     );
 
@@ -52,12 +53,11 @@ AppResult App::run() {
     }
 
     game_server_master->run();
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    game_server_master->wait_for_accept_ready(1000, 10);
 
     auto client_socket = std::make_shared<ClientSocket>(
-        socket_constants::LOOPBACK_ADDR,
-        socket_constants::SERVER_PORT
+        socket_constants::LOCAL_SERVER_ADDR,
+        socket_constants::LOCAL_SERVER_PORT
     );
 
     const auto conn_result = client_socket->connect_to_server();
