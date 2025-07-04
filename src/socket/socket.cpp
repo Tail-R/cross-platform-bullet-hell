@@ -476,8 +476,9 @@ std::optional<ClientConnection> ServerSocket::accept_client() {
 
     if (client_socket == INVALID_SOCKET)
     {
+#ifdef _WIN32
         std::cerr << "[ServerSocket] ERROR: Accept failed with error code: " << WSAGetLastError() << "\n"; 
-
+#endif
         return std::nullopt;
     }
 

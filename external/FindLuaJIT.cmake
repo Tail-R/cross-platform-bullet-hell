@@ -28,7 +28,7 @@ else()
     )
 
     include(FindPackageHandleStandardArgs)
-    find_package_handle_standard_args(LuaJIT DEFAULT_MSG LUAJIT_LIBRARY LUAJIT_INCLUDE_DIR)
+    find_package_handle_standard_args(LuaJIT DEFAULT_MSG LUAJIT_INCLUDE_DIR LUAJIT_LIBRARY)
 
     if (NOT LUAJIT_FOUND)
         message(FATAL_ERROR "LuaJIT not found. Please install it or set LUAJIT_ROOT_DIR.")
