@@ -392,10 +392,10 @@ bool ServerSocket::initialize() {
     }
 
     // Create address
-    sockaddr_in server_hint = {};
-    server_hint.sin_family = AF_INET;
-    server_hint.sin_port = htons(m_server_port);
-    server_hint.sin_addr.s_addr = INADDR_ANY;
+    sockaddr_in server_hint     = {};
+    server_hint.sin_family      = AF_INET;
+    server_hint.sin_port        = htons(m_server_port);
+    server_hint.sin_addr.s_addr = htonl(INADDR_ANY);
 
     // Binding address to the listen socket
     auto bind_result = bind(

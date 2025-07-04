@@ -4,8 +4,13 @@ project(bullet_hell_client LANGUAGES C CXX)
 # Target Name
 set(TARGET_NAME bullet_hell_client)
 
+# c++ version
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# c version
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # Output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -14,7 +19,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 
 # Source directories
 set(SRC_DIR src)
-set(GLAD_SRC external/glad/src/glad.c)
 
 # Source files
 set(SRC_FILES
@@ -37,7 +41,7 @@ set(SRC_FILES
     ${SRC_DIR}/app/app.cpp
     ${SRC_DIR}/input_manager/input_manager.cpp
 
-    # OpenGl abstract class
+    # OpenGL abstract class
     ${SRC_DIR}/mesh/mesh.cpp
     ${SRC_DIR}/shader/shader.cpp
     ${SRC_DIR}/texture/texture2d.cpp
@@ -50,13 +54,15 @@ set(SRC_FILES
     ${SRC_DIR}/logger/logger.cpp
 
     # Glad
-    ${GLAD_SRC}
+    external/glad/src/glad.c
 )
 
-# Include fetch scripts
+# Include scripts
 include(${CMAKE_SOURCE_DIR}/external/FetchSDL.cmake)
 include(${CMAKE_SOURCE_DIR}/external/FetchSol2.cmake)
-include(${CMAKE_SOURCE_DIR}/external/ImportLuaJIT.cmake)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/external")
+find_package(LuaJIT REQUIRED)
 
 # Executable
 add_executable(${TARGET_NAME} ${SRC_FILES})
@@ -76,13 +82,15 @@ target_link_libraries(${TARGET_NAME} PRIVATE
 )
 
 # Link OS-specific libraries
+# Winsock2
 if(WIN32)
-    target_link_libraries(${TARGET_NAME} PRIVATE
-        mingw32
-        ws2_32
-    )
-elseif(UNIX)
+    if (MINGW)
+        target_link_libraries(${TARGET_NAME} PRIVATE mingw32)
+    endif()
 
+    target_link_libraries(${TARGET_NAME} PRIVATE ws2_32)
 endif()
 
-add_compile_definitions(PROJECT_ROOT_DIR=\"${CMAKE_SOURCE_DIR}\")
+target_compile_definitions(${TARGET_NAME} PRIVATE
+    PROJECT_ROOT_DIR="${CMAKE_SOURCE_DIR}"
+)
