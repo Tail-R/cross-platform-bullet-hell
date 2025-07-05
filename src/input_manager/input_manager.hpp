@@ -12,6 +12,7 @@ public:
     const MenuInput& get_menu_input() const;
     const GameInput& get_game_input() const;
     const InputSnapshot& get_input_snapshot() const;
+
     bool get_quit_request() const;
 
 private:

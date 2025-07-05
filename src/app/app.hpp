@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glad/glad.h>
-#include "SDL2/SDL.h"
+#include <SDL2/SDL.h>
 
 struct SDLConfig {
     int             gl_context_major_version    = 4;
@@ -12,7 +12,7 @@ struct SDLConfig {
     int             window_pos_y                = SDL_WINDOWPOS_UNDEFINED;
     int             window_width                = 800;
     int             window_height               = 600;
-    int             window_flags                = SDL_WINDOW_HIDDEN | SDL_WINDOW_OPENGL;
+    int             window_flags                = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
     int             window_fps                  = 60;
 };
 

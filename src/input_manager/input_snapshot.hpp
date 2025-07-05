@@ -12,9 +12,7 @@ enum class InputDevice : uint8_t {
     Count
 };
 
-/*
-    This class abstracts the current input direction.
-*/
+ // The basic unit of action in this game
 enum class InputDirection : uint32_t {
     Stop,
     Up,
@@ -26,6 +24,24 @@ enum class InputDirection : uint32_t {
     DownLeft,
     UpLeft,
     Count
+};
+
+/*
+    This class abstracts the current input direction.
+    It's also represents gamepad input.
+*/
+enum class Arrow : uint8_t {
+    Up,
+    Right,
+    Down,
+    Left,
+    Count
+};
+
+struct ArrowState {
+    std::bitset<static_cast<uint32_t>(Arrow::Count)> held;
+    std::bitset<static_cast<uint32_t>(Arrow::Count)> pressed;
+    std::bitset<static_cast<uint32_t>(Arrow::Count)> released;
 };
 
 enum class MenuAction : uint8_t {
@@ -47,19 +63,19 @@ enum class GameAction : uint8_t {
 };
 
 struct MenuInput {
-    std::bitset<static_cast<size_t>(MenuAction::Count)> held;
-    std::bitset<static_cast<size_t>(MenuAction::Count)> pressed;
-    std::bitset<static_cast<size_t>(MenuAction::Count)> released;
+    std::bitset<static_cast<uint32_t>(MenuAction::Count)> held;
+    std::bitset<static_cast<uint32_t>(MenuAction::Count)> pressed;
+    std::bitset<static_cast<uint32_t>(MenuAction::Count)> released;
 
-    InputDirection direction;
+    ArrowState arrows;
 };
 
 struct GameInput {
-    std::bitset<static_cast<size_t>(GameAction::Count)> held;
-    std::bitset<static_cast<size_t>(GameAction::Count)> pressed;
-    std::bitset<static_cast<size_t>(GameAction::Count)> released;
+    std::bitset<static_cast<uint32_t>(GameAction::Count)> held;
+    std::bitset<static_cast<uint32_t>(GameAction::Count)> pressed;
+    std::bitset<static_cast<uint32_t>(GameAction::Count)> released;
 
-    InputDirection direction;
+    ArrowState arrows;
 };
 
 struct InputSnapshot {

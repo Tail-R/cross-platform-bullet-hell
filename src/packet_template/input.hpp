@@ -6,11 +6,10 @@
     Input
 */
 struct ClientInput {
-    uint32_t        client_id;
-    uint32_t        frame_timestamp;
-    InputDirection  direction;
+    uint32_t    client_id;
+    uint32_t    frame_timestamp;
+    GameInput   state;
 };
 
-constexpr size_t CLIENT_INPUT_SIZE = 12;
-static_assert(sizeof(InputDirection) == sizeof(uint32_t));
+constexpr size_t CLIENT_INPUT_SIZE = 32;
 static_assert(sizeof(ClientInput) == CLIENT_INPUT_SIZE);

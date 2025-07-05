@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.26)
-project(bullet_hell_client LANGUAGES C CXX)
+project(bullet_hell LANGUAGES C CXX)
 
 # Target Name
-set(TARGET_NAME bullet_hell_client)
+set(TARGET_NAME bullet_hell)
 
 # c++ version
 set(CMAKE_CXX_STANDARD 17)

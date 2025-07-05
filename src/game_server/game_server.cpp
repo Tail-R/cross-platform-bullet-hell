@@ -128,7 +128,25 @@ void GameServerMaster::accept_loop() {
     m_ready_to_accept = false;
 }
 
-void apply_player_input(PlayerSnapshot& player, InputDirection input, float speed = 0.02) {
+InputDirection get_direction_from_arrows(const ArrowState& arrows) {
+    const auto up       = arrows.held.test(static_cast<size_t>(Arrow::Up));
+    const auto right    = arrows.held.test(static_cast<size_t>(Arrow::Right));
+    const auto down     = arrows.held.test(static_cast<size_t>(Arrow::Down));
+    const auto left     = arrows.held.test(static_cast<size_t>(Arrow::Left));
+ 
+    if (up && right)    { return InputDirection::UpRight;   }
+    if (down && right)  { return InputDirection::DownRight; }
+    if (down && left)   { return InputDirection::DownLeft;  }
+    if (up && left)     { return InputDirection::UpLeft;    }
+    if (up)             { return InputDirection::Up;        }
+    if (right)          { return InputDirection::Right;     }
+    if (down)           { return InputDirection::Down;      }
+    if (left)           { return InputDirection::Left;      }
+
+    return InputDirection::Stop;
+}
+
+void apply_player_input(PlayerSnapshot& player, const InputDirection& input, float speed = 0.02) {
     float dx = 0.0f;
     float dy = 0.0f;
 
@@ -174,63 +192,72 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
     PlayerSnapshot player = {};
     frame.player_vector.push_back(player);
 
+    ArrowState arrow_state = {};
+
     while (m_running)
     {
-        std::optional<Packet> packet_opt = stream.poll_packet();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
 
-        if (!packet_opt.has_value())
+        while (true)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            continue;
+            std::optional<Packet> packet_opt = stream.poll_packet();
+
+            if (!packet_opt.has_value())
+            {
+                break;
+            }
+
+            Packet packet = std::move(*packet_opt);
+
+            switch (packet.header.payload_type)
+            {
+                case PayloadType::ClientHello:
+                {
+                    std::cout << "[GameServer] DEBUG: Received ClientHello\n";
+
+                    break;
+                }
+
+                case PayloadType::ClientGameRequest:
+                {
+                    std::cout << "[GameServer] DEBUG: Received ClientGameRequest\n";
+
+                    break;
+                }
+
+                case PayloadType::ClientInput:
+                {
+                    const auto input_snapshot = std::get<ClientInput>(packet.payload);
+                    arrow_state.held |= input_snapshot.state.arrows.pressed;
+                    arrow_state.held &= ~input_snapshot.state.arrows.released;
+
+                    break;
+                }
+
+                case PayloadType::ClientGoodBye:
+                {
+                    std::cout << "[GameServer] DEBUG: Received ClientGoodBye\n";
+
+                    break;
+                }
+
+                default:
+                {
+                    std::cerr << "[GameServer] DEBUG: Unexpected message type: "
+                            << static_cast<uint32_t>(packet.header.payload_type) << "\n";
+                    break;
+                }
+            }
         }
 
-        Packet packet = std::move(*packet_opt);
+        auto direction = get_direction_from_arrows(arrow_state);
 
-        switch (packet.header.payload_type)
-        {
-            case PayloadType::ClientHello:
-            {
-                std::cout << "[GameServer] DEBUG: Received ClientHello\n";
-
-                break;
-            }
-
-            case PayloadType::ClientGameRequest:
-            {
-                std::cout << "[GameServer] DEBUG: Received ClientGameRequest\n";
-
-                break;
-            }
-
-            case PayloadType::ClientInput:
-            {
-                const auto input_snapshot    = std::get<ClientInput>(packet.payload);
-                const auto input             = input_snapshot.direction;
-
-                apply_player_input(frame.player_vector[0], input);
-                // std::cout << "x: " << frame.player_vector[0].pos.x << " y: " << frame.player_vector[0].pos.y << "\n";
+        apply_player_input(frame.player_vector[0], direction);
+        // std::cout << "x: " << frame.player_vector[0].pos.x << " y: " << frame.player_vector[0].pos.y << "\n";
                 
-                const auto packet = make_packet<FrameSnapshot>(frame);
+        const auto packet = make_packet<FrameSnapshot>(frame);
 
-                stream.send_packet(packet);
-
-                break;
-            }
-
-            case PayloadType::ClientGoodBye:
-            {
-                std::cout << "[GameServer] DEBUG: Received ClientGoodBye\n";
-
-                break;
-            }
-
-            default:
-            {
-                std::cerr << "[GameServer] DEBUG: Unexpected message type: "
-                          << static_cast<uint32_t>(packet.header.payload_type) << "\n";
-                break;
-            }
-        }
+        stream.send_packet(packet);
     }
 
     stream.stop();
