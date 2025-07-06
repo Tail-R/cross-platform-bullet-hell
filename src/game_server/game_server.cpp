@@ -213,30 +213,32 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
             {
                 case PayloadType::ClientHello:
                 {
-                    std::cout << "[GameServer] DEBUG: Received ClientHello\n";
+                    std::cout << "[GameServer] DEBUG: Received ClientHello" << "\n";
 
                     break;
                 }
 
                 case PayloadType::ClientGameRequest:
                 {
-                    std::cout << "[GameServer] DEBUG: Received ClientGameRequest\n";
+                    std::cout << "[GameServer] DEBUG: Received ClientGameRequest" << "\n";
 
                     break;
                 }
 
                 case PayloadType::ClientInput:
                 {
+                    std::cout << "[GameServer] DEBUG: Received ClientInput" << "\n";
+
                     const auto input_snapshot = std::get<ClientInput>(packet.payload);
-                    arrow_state.held |= input_snapshot.state.arrows.pressed;
-                    arrow_state.held &= ~input_snapshot.state.arrows.released;
+                    arrow_state.held |= input_snapshot.game_input.arrows.pressed;
+                    arrow_state.held &= ~input_snapshot.game_input.arrows.released;
 
                     break;
                 }
 
                 case PayloadType::ClientGoodBye:
                 {
-                    std::cout << "[GameServer] DEBUG: Received ClientGoodBye\n";
+                    std::cout << "[GameServer] DEBUG: Received ClientGoodBye" << "\n";
 
                     break;
                 }

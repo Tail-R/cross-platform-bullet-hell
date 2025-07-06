@@ -38,26 +38,26 @@ AppResult App::run() {
 
     std::cout << "[App] DEBUG: App has been started" << "\n";
 
-    auto game_server_master = std::make_shared<GameServerMaster>(
-        socket_constants::LOCAL_SERVER_PORT,
-        socket_constants::LOCAL_SERVER_MAX_INSTANCES
-    );
+    // auto game_server_master = std::make_shared<GameServerMaster>(
+    //     socket_constants::LOCAL_SERVER_PORT,
+    //     socket_constants::LOCAL_SERVER_MAX_INSTANCES
+    // );
 
-    if (!game_server_master->initialize())
-    {
-        std::cerr << "[App] Failed to initialize game server master" << "\n";
-    }
-    else
-    {
-        std::cout <<"[App] Game server master has been initialized" << "\n";
-    }
+    // if (!game_server_master->initialize())
+    // {
+    //     std::cerr << "[App] Failed to initialize game server master" << "\n";
+    // }
+    // else
+    // {
+    //     std::cout <<"[App] Game server master has been initialized" << "\n";
+    // }
 
-    game_server_master->run();
-    game_server_master->wait_for_accept_ready(1000, 10);
+    // game_server_master->run();
+    // game_server_master->wait_for_accept_ready(1000, 10);
 
     auto client_socket = std::make_shared<ClientSocket>(
-        socket_constants::LOCAL_SERVER_ADDR,
-        socket_constants::LOCAL_SERVER_PORT
+        socket_constants::SERVER_ADDR,
+        socket_constants::SERVER_PORT
     );
 
     const auto conn_result = client_socket->connect_to_server();
@@ -126,7 +126,7 @@ AppResult App::run() {
         if (game_input.arrows.pressed.any() || game_input.arrows.released.any())
         {
             ClientInput input;
-            input.state = game_input;
+            input.game_input = game_input;
 
             const auto packet = make_packet(input);
             const auto send_result = packet_stream.send_packet(packet);
