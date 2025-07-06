@@ -62,6 +62,8 @@ public:
     std::optional<Packet> poll_packet();
     bool send_packet(const Packet& packet);
 
+    bool has_exception() const;
+
 private:
     void receive_loop();
     void process_buffer();

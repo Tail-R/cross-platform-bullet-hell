@@ -121,15 +121,7 @@ void GameServerMaster::accept_loop() {
 
         // Create thread
         auto worker_thread = std::thread([this, client_conn]() {
-            try
-            {
-                handle_client(client_conn);
-            }
-            catch (const std::exception& e)
-            {
-                std::cerr << "[GameServer] ERROR: Game Instance threw an exception: " << e.what() << "\n";
-            }
-
+            handle_client(client_conn);
             m_active_instances.fetch_sub(1);
         });
             
@@ -214,6 +206,11 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
     while (m_running && !quit)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
+
+        if (stream.has_exception())
+        {
+            break;
+        }
 
         while (true)
         {

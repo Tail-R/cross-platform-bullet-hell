@@ -274,18 +274,12 @@ void PacketStreamServer::stop() {
         if (m_recv_thread.joinable())
         {
             m_recv_thread.join();
+            
             std::cout << "[PacketStreamServer] DEBUG: Receive thread has been joined" << "\n";
 
-            if (m_thread_exception != nullptr)
+            if (has_exception())
             {
-                try
-                {
-                    std::rethrow_exception(m_thread_exception);
-                }
-                catch (const std::exception& e)
-                {
-                    std::cerr << "[PacketStreamServer] ERROR: Receive thread failed with: " << e.what() << "\n";
-                }
+                std::cerr << "[PacketStreamServer] ERROR: Detected stream exception, terminating client instance" << "\n";
             }
         }
     }
@@ -367,6 +361,10 @@ std::optional<Packet> PacketStreamServer::poll_packet() {
     m_packet_queue.pop();
 
     return packet;
+}
+
+bool PacketStreamServer::has_exception() const {
+    return m_thread_exception != nullptr;
 }
 
 void PacketStreamServer::receive_loop() {
