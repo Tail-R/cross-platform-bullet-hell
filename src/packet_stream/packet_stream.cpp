@@ -135,8 +135,20 @@ void PacketStreamClient::receive_loop() {
         {
             continue;
         }
-        else if (bytes_read <= 0)
+        else if (bytes_read == 0)
         {
+            std::cerr << "[PacketStreamClient] ERROR: Server disconnected (EOF)" << "\n";
+
+            m_running = false;
+
+            break;
+        }
+        else if (bytes_read < 0)
+        {
+            std::cerr << "[PacketStreamClient] ERROR: Recv failed: " << strerror(errno) << "\n";
+
+            m_running = false;
+
             break;
         }
         
@@ -340,9 +352,16 @@ void PacketStreamServer::receive_loop() {
         {
             continue;
         }
-        else if (bytes_read <= 0)
+        else if (bytes_read == 0)
         {
-            break;
+            throw std::runtime_error("[PacketStreamServer] client disconnected");
+        }
+        else if (bytes_read < 0)
+        {
+            if (errno == ECONNRESET || errno == EPIPE)
+            {
+                throw std::runtime_error("[PacketStreamServer] client connection reset");
+            }
         }
 
         m_buffer.insert(m_buffer.end(), temp_buffer, temp_buffer + bytes_read);
