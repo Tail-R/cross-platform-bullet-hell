@@ -5,9 +5,6 @@
 #include "../packet_stream/packet_stream.hpp"
 #include "../packet_template/packet_template.hpp"
 
-/*
-    Game server master
-*/
 GameServerMaster::GameServerMaster(uint16_t server_port, size_t max_instances)
     : m_ready_to_accept(false)
     , m_running(false)
@@ -90,9 +87,8 @@ void GameServerMaster::accept_loop() {
     while (m_running)
     {
         std::cerr << "[GameServerMaster] DEBUG: Now accept will block this thread" << "\n";
-        /*
-            Block until the client to connect
-        */
+
+        // Block until the client to connect
         auto client_opt = m_server_socket->accept_client();
 
         std::cerr << "[GameServerMaster] DEBUG: Thread is back from accept" << "\n";
@@ -215,6 +211,7 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
 
     auto quit = false;
 
+    // Game logic loop
     while (m_running && !quit)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
@@ -283,9 +280,6 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
 
         stream.send_packet(packet);
     }
-
-    stream.stop();
-    client_conn->disconnect();
 
     m_active_instances.fetch_sub(1);
 

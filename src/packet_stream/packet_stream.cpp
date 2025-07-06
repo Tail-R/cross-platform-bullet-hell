@@ -235,6 +235,7 @@ PacketStreamServer::PacketStreamServer(std::shared_ptr<ClientConnection> connect
     : m_connection(std::move(connection))
     , m_running(false)
     , m_send_sequence(0)
+    , m_thread_exception(nullptr)
 {}
 
 PacketStreamServer::~PacketStreamServer() {
@@ -245,7 +246,21 @@ void PacketStreamServer::start() {
     if (!m_running)
     {
         m_running = true;
-        m_recv_thread = std::thread(&PacketStreamServer::receive_loop, this);
+        m_thread_exception = nullptr;
+
+        m_recv_thread = std::thread([this]() {
+            try
+            {
+                receive_loop();
+            }
+            catch (const std::exception& e)
+            {
+                m_thread_exception = std::current_exception();
+                
+                std::cerr << "[PacketStreamServer] ERROR: Receive thread threw an exception: " << e.what() << "\n";
+            }
+        });
+
         std::cout << "[PacketStreamServer] DEBUG: Receive thread started" << "\n";
     }
 }
@@ -260,6 +275,18 @@ void PacketStreamServer::stop() {
         {
             m_recv_thread.join();
             std::cout << "[PacketStreamServer] DEBUG: Receive thread has been joined" << "\n";
+
+            if (m_thread_exception != nullptr)
+            {
+                try
+                {
+                    std::rethrow_exception(m_thread_exception);
+                }
+                catch (const std::exception& e)
+                {
+                    std::cerr << "[PacketStreamServer] EXCEPTION: Receive thread failed with: " << e.what() << "\n";
+                }
+            }
         }
     }
 }
@@ -277,7 +304,7 @@ bool PacketStreamServer::send_packet(const Packet& packet) {
                   << "header_type=" << static_cast<int>(packet.header.payload_type)
                   << ", actual_type=" << static_cast<int>(actual_type) << "\n";
 
-
+ 
         return false;
     }
 

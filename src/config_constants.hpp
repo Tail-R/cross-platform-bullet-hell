@@ -1,7 +1,7 @@
 #pragma once
 
 #define BUILD_CLIENT // #define BUILD_SERVER
-// #define ENABLE_LOCAL_SERVER
+#define ENABLE_LOCAL_SERVER
 
 #include <cstdint>
 #include <string_view>

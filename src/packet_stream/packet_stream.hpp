@@ -75,4 +75,6 @@ private:
     std::queue<Packet>                  m_packet_queue;
 
     std::atomic<uint32_t>               m_send_sequence;
+
+    std::exception_ptr                  m_thread_exception;
 };

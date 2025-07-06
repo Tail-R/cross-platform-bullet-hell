@@ -27,8 +27,10 @@ namespace {
         }
 
         int safe_size = static_cast<int>(bytes.size());
+        int frags = 0;
 #else
         size_t safe_size = bytes.size();
+        int frags = MSG_NOSIGNAL;
 #endif
         return send(
             sock,
@@ -37,7 +39,7 @@ namespace {
             */
             reinterpret_cast<const char*>(bytes.data()),
             safe_size,
-            0
+            frags
         );
     }
 
@@ -113,8 +115,8 @@ namespace {
 
             ssize_t received = socket_recv(sock, temp_buffer.data(), to_read);
 
-            if (received == 0)
             // Graceful shutdown
+            if (received == 0)
             {
                 return std::nullopt;
             }
