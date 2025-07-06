@@ -19,11 +19,11 @@ int main(int argc, char* args[]) {
 
         if (!game_server_master->initialize())
         {
-            std::cerr << "[App] Failed to initialize game server master" << "\n";
+            std::cerr << "[main] Failed to initialize game server master" << "\n";
         }
         else
         {
-            std::cout << "[App] Game server master has been initialized" << "\n";
+            std::cout << "[main] Game server master has been initialized" << "\n";
         }
 
         game_server_master->run_async();
@@ -42,7 +42,7 @@ int main(int argc, char* args[]) {
 
     if (!app.initialize(sdl_config))
     {
-        std::cerr << "Failed to initialize application" << "\n";
+        std::cerr << "[main] Failed to initialize application" << "\n";
 
         return EXIT_FAILURE;
     }
@@ -59,11 +59,11 @@ int main(int argc, char* args[]) {
 
     if (!game_server_master->initialize())
     {
-        std::cerr << "[App] Failed to initialize game server master" << "\n";
+        std::cerr << "[main] Failed to initialize game server master" << "\n";
     }
     else
     {
-        std::cout <<"[App] Game server master has been initialized" << "\n";
+        std::cout <<"[main] Game server master has been initialized" << "\n";
     }
 
     game_server_master->run();
