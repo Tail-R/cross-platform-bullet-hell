@@ -115,7 +115,7 @@ namespace {
 }
 
 /*
-    Serialize
+    Serializer
 */
 std::vector<std::byte> serialize_client_input(const ClientInput& payload) {
     std::vector<std::byte> buffer;
@@ -130,7 +130,7 @@ std::vector<std::byte> serialize_client_input(const ClientInput& payload) {
 }
 
 /*
-    Deserialize
+    Deserializer
 */
 std::optional<ClientInput> deserialize_client_input(const std::vector<std::byte>& buffer) {
     if (buffer.size() > CLIENT_INPUT_SIZE)

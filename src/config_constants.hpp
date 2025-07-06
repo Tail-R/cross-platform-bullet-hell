@@ -1,5 +1,8 @@
 #pragma once
 
+#define BUILD_CLIENT // #define BUILD_SERVER
+// #define ENABLE_LOCAL_SERVER
+
 #include <cstdint>
 #include <string_view>
 
@@ -31,13 +34,20 @@ namespace render_constants {
 }
 
 namespace socket_constants {
-    constexpr std::string_view  LOCAL_SERVER_ADDR           = "127.0.0.1";
-    constexpr uint16_t          LOCAL_SERVER_PORT           = 2222;
-    constexpr size_t            LOCAL_SERVER_MAX_INSTANCES  = 1;
+#ifdef BUILD_CLIENT
+    #ifdef ENABLE_LOCAL_SERVER
+        constexpr std::string_view  SERVER_ADDR             = "127.0.0.1";
+        constexpr uint16_t          SERVER_PORT             = 2222;
+        constexpr size_t            SERVER_MAX_INSTANCES    = 1;
+    #else
+        constexpr std::string_view  SERVER_ADDR             = "150.42.11.6";
+        constexpr uint16_t          SERVER_PORT             = 6198;
+    #endif
 
-    constexpr std::string_view  SERVER_ADDR                 = "150.42.11.6";
-    constexpr uint16_t          SERVER_PORT                 = 6198;
-    
-    constexpr uint32_t          SERVER_MAX_PACKET_SIZE      = 10 * 1024 * 1024; // 10MB
-    constexpr size_t            SERVER_MAX_INSTANCES        = 5;
+#elif defined(BUILD_SERVER)
+    constexpr uint16_t  SERVER_PORT             = 22222;
+    constexpr size_t    SERVER_MAX_INSTANCES    = 10;
+#endif
+
+    constexpr uint32_t  SERVER_MAX_PACKET_SIZE  = 10 * 1024 * 1024; // 10MB
 }

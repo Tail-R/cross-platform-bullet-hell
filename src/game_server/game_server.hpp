@@ -13,6 +13,7 @@ public:
 
     bool initialize();
     void run();
+    void run_async();
     void stop();
     bool wait_for_accept_ready(size_t timeout_msec, size_t max_attempts);
 

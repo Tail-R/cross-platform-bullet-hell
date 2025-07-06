@@ -6,7 +6,7 @@
 #include "../packet_template/packet_template.hpp"
 
 /*
-    GameServerMaster
+    Game server master
 */
 GameServerMaster::GameServerMaster(uint16_t server_port, size_t max_instances)
     : m_ready_to_accept(false)
@@ -28,6 +28,15 @@ bool GameServerMaster::initialize() {
 }
 
 void GameServerMaster::run() {
+    if (!m_running)
+    {
+        m_running = true;
+
+        accept_loop();
+    }
+}
+
+void GameServerMaster::run_async() {
     if (!m_running)
     {
         m_running = true;
@@ -76,13 +85,14 @@ bool GameServerMaster::wait_for_accept_ready(size_t timeout_msec, size_t max_att
 }
 
 void GameServerMaster::accept_loop() {
+    m_ready_to_accept = true;
+
     while (m_running)
     {
         std::cerr << "[GameServerMaster] DEBUG: Now accept will block this thread" << "\n";
         /*
             Block until the client to connect
         */
-        m_ready_to_accept = true;
         auto client_opt = m_server_socket->accept_client();
 
         std::cerr << "[GameServerMaster] DEBUG: Thread is back from accept" << "\n";
@@ -98,9 +108,12 @@ void GameServerMaster::accept_loop() {
             std::move(client_opt.value())
         );
 
-        std::cout << "[GameServer] DEBUG: client_conn accepted\n";
+        std::cout << "[GameServer] DEBUG: client_conn accepted" << "\n";
+        
+        auto current = m_active_instances.load();
 
-        if (m_active_instances >= m_max_instances)
+        // CAS (Compare-And-Swap)
+        if (m_active_instances >= m_max_instances || !m_active_instances.compare_exchange_strong(current, current + 1))
         {
             std::cerr << "[GameServer] DEBUG: The maximum number of instances has been reached"
                       << " and the client connection has been refused." << "\n";
@@ -110,16 +123,22 @@ void GameServerMaster::accept_loop() {
             continue;
         }
 
-        m_active_instances.fetch_add(1);
-
         // Create thread
-        auto worker_thread = std::thread(
-            &GameServerMaster::handle_client,
-            this,
-            client_conn
-        );
-
-        worker_thread.detach();
+        try
+        {
+            auto worker_thread = std::thread(
+                &GameServerMaster::handle_client,
+                this,
+                client_conn
+            );
+            
+            worker_thread.detach();
+        }
+        catch (const std::exception& e)
+        {
+            m_active_instances.fetch_sub(1);
+            std::cerr << "[GameServer] ERROR: Exception during thread creation: " << e.what() << "\n";
+        }
 
         std::cout << "[GameServer] DEBUG: Game Instance has been created" << "\n"
                   << "[GameServer] DEBUG: " << m_active_instances << " instances are active" << "\n";
@@ -194,7 +213,9 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
 
     ArrowState arrow_state = {};
 
-    while (m_running)
+    auto quit = false;
+
+    while (m_running && !quit)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
 
@@ -240,6 +261,8 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
                 {
                     std::cout << "[GameServer] DEBUG: Received ClientGoodBye" << "\n";
 
+                    quit = true;
+
                     break;
                 }
 
@@ -255,7 +278,6 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
         auto direction = get_direction_from_arrows(arrow_state);
 
         apply_player_input(frame.player_vector[0], direction);
-        // std::cout << "x: " << frame.player_vector[0].pos.x << " y: " << frame.player_vector[0].pos.y << "\n";
                 
         const auto packet = make_packet<FrameSnapshot>(frame);
 

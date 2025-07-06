@@ -38,23 +38,6 @@ AppResult App::run() {
 
     std::cout << "[App] DEBUG: App has been started" << "\n";
 
-    // auto game_server_master = std::make_shared<GameServerMaster>(
-    //     socket_constants::LOCAL_SERVER_PORT,
-    //     socket_constants::LOCAL_SERVER_MAX_INSTANCES
-    // );
-
-    // if (!game_server_master->initialize())
-    // {
-    //     std::cerr << "[App] Failed to initialize game server master" << "\n";
-    // }
-    // else
-    // {
-    //     std::cout <<"[App] Game server master has been initialized" << "\n";
-    // }
-
-    // game_server_master->run();
-    // game_server_master->wait_for_accept_ready(1000, 10);
-
     auto client_socket = std::make_shared<ClientSocket>(
         socket_constants::SERVER_ADDR,
         socket_constants::SERVER_PORT
