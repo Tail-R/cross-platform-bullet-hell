@@ -284,7 +284,7 @@ void PacketStreamServer::stop() {
                 }
                 catch (const std::exception& e)
                 {
-                    std::cerr << "[PacketStreamServer] EXCEPTION: Receive thread failed with: " << e.what() << "\n";
+                    std::cerr << "[PacketStreamServer] ERROR: Receive thread failed with: " << e.what() << "\n";
                 }
             }
         }
@@ -304,7 +304,6 @@ bool PacketStreamServer::send_packet(const Packet& packet) {
                   << "header_type=" << static_cast<int>(packet.header.payload_type)
                   << ", actual_type=" << static_cast<int>(actual_type) << "\n";
 
- 
         return false;
     }
 
@@ -324,6 +323,7 @@ bool PacketStreamServer::send_packet(const Packet& packet) {
             {
                 std::cerr << "[PacketStreamServer] ERROR: Failed to serialize frame" << "\n"
                           << "[PacketStreamServer] ERROR: The data can not be sent" << "\n";
+
                 return false;
             }
             payload_bytes = frame_bytes_opt.value();
@@ -333,6 +333,7 @@ bool PacketStreamServer::send_packet(const Packet& packet) {
         {
             std::cerr << "[PacketStreamServer] ERROR: Invalid PayloadType" << "\n"
                       << "[PacketStreamServer] ERROR: The data can not be sent" << "\n";
+
             return false;
         }
     }

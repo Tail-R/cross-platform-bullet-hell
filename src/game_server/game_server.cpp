@@ -120,21 +120,20 @@ void GameServerMaster::accept_loop() {
         }
 
         // Create thread
-        try
-        {
-            auto worker_thread = std::thread(
-                &GameServerMaster::handle_client,
-                this,
-                client_conn
-            );
-            
-            worker_thread.detach();
-        }
-        catch (const std::exception& e)
-        {
+        auto worker_thread = std::thread([this, client_conn]() {
+            try
+            {
+                handle_client(client_conn);
+            }
+            catch (const std::exception& e)
+            {
+                std::cerr << "[GameServer] ERROR: Game Instance threw an exception: " << e.what() << "\n";
+            }
+
             m_active_instances.fetch_sub(1);
-            std::cerr << "[GameServer] ERROR: Exception during thread creation: " << e.what() << "\n";
-        }
+        });
+            
+        worker_thread.detach();
 
         std::cout << "[GameServer] DEBUG: Game Instance has been created" << "\n"
                   << "[GameServer] DEBUG: " << m_active_instances << " instances are active" << "\n";
@@ -280,8 +279,6 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
 
         stream.send_packet(packet);
     }
-
-    m_active_instances.fetch_sub(1);
 
     std::cout << "[GameServer] DEBUG: Game Instance has been terminated successfully" << "\n";
 }
