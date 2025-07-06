@@ -10,8 +10,8 @@ struct SDLConfig {
     std::string     window_name                 = "My first app! uwu";
     int             window_pos_x                = SDL_WINDOWPOS_UNDEFINED;
     int             window_pos_y                = SDL_WINDOWPOS_UNDEFINED;
-    int             window_width                = 800;
-    int             window_height               = 600;
+    int             window_width                = 384;
+    int             window_height               = 448;
     int             window_flags                = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
     int             window_fps                  = 60;
 };

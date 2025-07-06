@@ -13,7 +13,7 @@ public:
 
     bool initialize();
     void run();
-    void run_async();
+    void run_async();   // It's useful if you want to run the server in the same process as the client
     void stop();
     bool wait_for_accept_ready(size_t timeout_msec, size_t max_attempts);
 

@@ -36,9 +36,9 @@ int main(int argc, char* args[]) {
 
     SDL_GetCurrentDisplayMode(0, &disp_mode);
 
-    sdl_config.window_width  = disp_mode.w;
-    sdl_config.window_height = disp_mode.h;
-    sdl_config.window_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    sdl_config.window_width  = 384; // disp_mode.w;
+    sdl_config.window_height = 448; // disp_mode.h;
+    // sdl_config.window_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 
     if (!app.initialize(sdl_config))
     {

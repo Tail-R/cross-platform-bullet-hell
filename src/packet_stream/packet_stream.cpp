@@ -384,6 +384,10 @@ void PacketStreamServer::receive_loop() {
         }
         else if (bytes_read < 0)
         {
+            /*
+                ECONNRESET:     The pair crashed without calling close()
+                EPIPE:          The pair has already used close()
+            */
             if (errno == ECONNRESET || errno == EPIPE)
             {
                 throw std::runtime_error("[PacketStreamServer] client connection reset");

@@ -18,49 +18,42 @@ App::App()
     , m_sdl_initialized(false)
     , m_sdl_gl_initialized(false)
 {
+    std::cout << "[App] DEBUG: App has been started" << "\n";
 
     start_async_logger(logger_constants::LOG_FILE_NAME.data());
-    async_log(LogLevel::Info, "------------------------------");
-    async_log(LogLevel::Info, "App has been started");
 }
 
 App::~App() {
     cleanup();
 
-    async_log(LogLevel::Info, "App shutdown complate");
-    async_log(LogLevel::Info, "------------------------------");
     stop_async_logger();
+
+    std::cout << "[App] DEBUG: App shutdown complete" << "\n";
 }
 
 AppResult App::run() {
     AppResult app_result;
     InputManager input_manager;
 
-    std::cout << "[App] DEBUG: App has been started" << "\n";
-
     auto client_socket = std::make_shared<ClientSocket>(
         socket_constants::SERVER_ADDR,
         socket_constants::SERVER_PORT
     );
 
-    const auto conn_result = client_socket->connect_to_server();
-
-    if (!conn_result)
+    if (!client_socket->connect_to_server())
     {
         std::cerr << "[App] DEBUG: Failed to connect to server" << "\n";
-    }
-    else
-    {
-        std::cout << "[App] DEBUG: Server connected" << "\n";
+
+        return app_result;
     }
 
     PacketStreamClient packet_stream(client_socket);
     packet_stream.start();
 
     // Set viewport as display size
-    SDL_DisplayMode disp_mode;
-    SDL_GetCurrentDisplayMode(0, &disp_mode);
-    glViewport(0, 0, disp_mode.w, disp_mode.h);
+    // SDL_DisplayMode disp_mode;
+    // SDL_GetCurrentDisplayMode(0, &disp_mode);
+    // glViewport(0, 0, disp_mode.w, disp_mode.h);
 
     bool quit = false;
  
@@ -68,13 +61,21 @@ AppResult App::run() {
     auto sf = ShaderFactory();
     auto tf = TextureFactory();
 
-    const auto mesh_path     = std::string(assets_constants::MESH_DIR)       + "/square.lua";
-    const auto shader_path   = std::string(assets_constants::SHADER_DIR)     + "/green_aura.lua";
-    const auto texture_path  = std::string(assets_constants::TEXTURE_DIR)    + "/zunmon_3002.png";
+    const auto mesh_path        = std::string(assets_constants::MESH_DIR)       + "/square.lua";
+    const auto bg_mesh_path     = std::string(assets_constants::MESH_DIR)       + "/full_size.lua";
+    const auto shader_path      = std::string(assets_constants::SHADER_DIR)     + "/green_aura.lua";
+    const auto bg_shader_path   = std::string(assets_constants::SHADER_DIR)     + "/basic.lua";
+    const auto texture_path     = std::string(assets_constants::TEXTURE_DIR)    + "/zunmon_3002.png";
+    const auto bg_texture_path  = std::string(assets_constants::TEXTURE_DIR)    + "/background109.png"; 
 
     mf.load_mesh(mesh_path);
+    mf.load_mesh(bg_mesh_path);
     sf.load_shader(shader_path);
+    sf.load_shader(bg_shader_path);
     tf.load_texture(texture_path);
+    tf.load_texture(bg_texture_path);
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     float x_offset = 0.0;
     float y_offset = 0.0;
@@ -95,17 +96,23 @@ AppResult App::run() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         input_manager.collect_input_events();
-        if (input_manager.get_quit_request()) { quit = true; }
+        
+        if (input_manager.get_quit_request())
+        {
+            quit = true;
+        }
 
         auto game_input = input_manager.get_game_input();
+
         if (game_input.pressed.test(static_cast<size_t>(GameAction::Shoot)))
         {
             quit = true;
+
             std::cout << "[App] DEBUG: Quit has been pressed" << "\n"
                       << "[App] DEBUG: Exiting the draw loop" << "\n";
         } 
 
-        // Send input event
+        // Send client input
         if (game_input.arrows.pressed.any() || game_input.arrows.released.any())
         {
             ClientInput input;
@@ -113,6 +120,11 @@ AppResult App::run() {
 
             const auto packet = make_packet(input);
             const auto send_result = packet_stream.send_packet(packet);
+
+            if (!send_result)
+            {
+                std::cerr << "[App] ERROR: Failed to send client input" << "\n";
+            }
         }
 
         // Get frame
@@ -120,18 +132,27 @@ AppResult App::run() {
 
         if (frame_opt.has_value())
         {
-            // std::cout << "[App] DEBUG: Received a frame" << "\n";
-
             x_offset = frame_opt.value().player_vector[0].pos.x;
             y_offset = frame_opt.value().player_vector[0].pos.y;
         }
 
-        auto mesh = mf.get_mesh(mesh_path);
-        auto shader = sf.get_shader(shader_path);
-        auto texture = tf.get_texture(texture_path);
+        // Background
+        auto mesh = mf.get_mesh(bg_mesh_path);
+        auto shader = sf.get_shader(bg_shader_path);
+        auto texture = tf.get_texture(bg_texture_path);
 
-        const auto texture_width = texture->width();
-        const auto texture_height = texture->height();
+        shader->use();
+        shader->set_float("time", total_time);
+        shader->set_vec2("offset", glm::vec2(0.0f, 0.0f));
+
+        texture->bind();
+        mesh->bind();
+        mesh->draw();
+
+        // Player
+        mesh = mf.get_mesh(mesh_path);
+        shader = sf.get_shader(shader_path);
+        texture = tf.get_texture(texture_path);
 
         shader->use();
         shader->set_float("time", total_time);

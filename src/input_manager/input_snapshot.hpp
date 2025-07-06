@@ -44,6 +44,8 @@ struct ArrowState {
     std::bitset<static_cast<size_t>(Arrow::Count)> released;
 };
 
+InputDirection get_direction_from_arrows(const ArrowState& arrows);
+
 enum class MenuAction : uint8_t {
     None,
     Navigate,

@@ -40,12 +40,15 @@ set(SRC_FILES
     # SDL2 abstract class
     ${SRC_DIR}/app/app.cpp
     ${SRC_DIR}/input_manager/input_manager.cpp
+    ${SRC_DIR}/input_manager/input_snapshot.cpp
 
     # OpenGL abstract class
     ${SRC_DIR}/mesh/mesh.cpp
     ${SRC_DIR}/shader/shader.cpp
     ${SRC_DIR}/texture/texture2d.cpp
     ${SRC_DIR}/renderer/renderer.cpp
+    ${SRC_DIR}/renderable_resolver/renderable_resolver.cpp
+    ${SRC_DIR}/transformer/transformer.cpp
     ${SRC_DIR}/assets_factory/mesh_factory.cpp
     ${SRC_DIR}/assets_factory/shader_factory.cpp
     ${SRC_DIR}/assets_factory/texture_factory.cpp

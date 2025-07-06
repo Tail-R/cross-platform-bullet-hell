@@ -2,6 +2,7 @@
 #include <cmath>        // std::sqrt
 #include <algorithm>    // std::clamp
 #include "game_server.hpp"
+#include "game_logic_constants.hpp"
 #include "../packet_stream/packet_stream.hpp"
 #include "../packet_template/packet_template.hpp"
 
@@ -134,58 +135,35 @@ void GameServerMaster::accept_loop() {
     m_ready_to_accept = false;
 }
 
-InputDirection get_direction_from_arrows(const ArrowState& arrows) {
-    const auto up       = arrows.held.test(static_cast<size_t>(Arrow::Up));
-    const auto right    = arrows.held.test(static_cast<size_t>(Arrow::Right));
-    const auto down     = arrows.held.test(static_cast<size_t>(Arrow::Down));
-    const auto left     = arrows.held.test(static_cast<size_t>(Arrow::Left));
- 
-    if (up && right)    { return InputDirection::UpRight;   }
-    if (down && right)  { return InputDirection::DownRight; }
-    if (down && left)   { return InputDirection::DownLeft;  }
-    if (up && left)     { return InputDirection::UpLeft;    }
-    if (up)             { return InputDirection::Up;        }
-    if (right)          { return InputDirection::Right;     }
-    if (down)           { return InputDirection::Down;      }
-    if (left)           { return InputDirection::Left;      }
+void apply_player_input(
+    PlayerSnapshot& player,
+    const InputDirection& input,
+    float speed = game_logic_constants::PLAYER_SPEED
+) {
+    constexpr float inv_sqrt2 = 0.70710678f;
 
-    return InputDirection::Stop;
-}
-
-void apply_player_input(PlayerSnapshot& player, const InputDirection& input, float speed = 0.02) {
     float dx = 0.0f;
     float dy = 0.0f;
 
     switch (input)
     {
-        case InputDirection::Up:        { dy = +1;            break; }
-        case InputDirection::Down:      { dy = -1;            break; }
-        case InputDirection::Right:     { dx = +1;            break; }
-        case InputDirection::Left:      { dx = -1;            break; }
-        case InputDirection::UpRight:   { dx = +1; dy = +1;   break; }
-        case InputDirection::DownRight: { dx = +1; dy = -1;   break; }
-        case InputDirection::UpLeft:    { dx = -1; dy = +1;   break; }
-        case InputDirection::DownLeft:  { dx = -1; dy = -1;   break; }
+        case InputDirection::Up:        { dy = +1.0f;                       break; }
+        case InputDirection::Down:      { dy = -1.0f;                       break; }
+        case InputDirection::Right:     { dx = +1.0f;                       break; }
+        case InputDirection::Left:      { dx = -1.0f;                       break; }
+        case InputDirection::UpRight:   { dx = +inv_sqrt2; dy = +inv_sqrt2; break; }
+        case InputDirection::DownRight: { dx = +inv_sqrt2; dy = -inv_sqrt2; break; }
+        case InputDirection::UpLeft:    { dx = -inv_sqrt2; dy = +inv_sqrt2; break; }
+        case InputDirection::DownLeft:  { dx = -inv_sqrt2; dy = -inv_sqrt2; break; }
 
+        case InputDirection::Stop:
         default: return;
     }
 
-    if (dx != 0 && dy != 0)
-    {
-        const float norm = std::sqrt(2.0f);
-
-        dx /= norm;
-        dy /= norm;
-    }
-
-    player.pos.x += dx * speed;
-    player.pos.y += dy * speed;
-
-    player.pos.x = std::clamp(player.pos.x, -1.0f, 1.0f);
-    player.pos.y = std::clamp(player.pos.y, -1.0f, 1.0f);
-
-    player.vel.x = dx * speed;
-    player.vel.y = dy * speed;
+    player.pos = {
+        player.pos.x = std::clamp(player.pos.x + dx * speed, -192.0f, 192.f),
+        player.pos.y = std::clamp(player.pos.y + dy * speed, -224.0f, 224.0f)
+    };
 }
 
 void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_conn) {
@@ -202,16 +180,21 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
 
     auto quit = false;
 
+    // msec / FPS
+    constexpr auto target_frame_duration = std::chrono::milliseconds(1000 / 60);
+
     // Game logic loop
     while (m_running && !quit)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
+        auto frame_start = std::chrono::steady_clock::now();
 
+        // Check if the recv thread is alive
         if (stream.has_exception())
         {
             break;
         }
 
+        // Process packet queue
         while (true)
         {
             std::optional<Packet> packet_opt = stream.poll_packet();
@@ -269,12 +252,18 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
         }
 
         auto direction = get_direction_from_arrows(arrow_state);
-
         apply_player_input(frame.player_vector[0], direction);
                 
         const auto packet = make_packet<FrameSnapshot>(frame);
-
         stream.send_packet(packet);
+
+        auto frame_end = std::chrono::steady_clock::now();
+        auto frame_duration = std::chrono::duration_cast<std::chrono::milliseconds>(frame_end - frame_start);
+
+        if (frame_duration < target_frame_duration)
+        {
+            std::this_thread::sleep_for(target_frame_duration - frame_duration);
+        }
     }
 
     std::cout << "[GameServer] DEBUG: Game Instance has been terminated successfully" << "\n";
