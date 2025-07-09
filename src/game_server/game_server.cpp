@@ -15,10 +15,14 @@ GameServerMaster::GameServerMaster(uint16_t server_port, size_t max_instances)
     m_server_socket = std::make_shared<ServerSocket>(
         server_port
     );
+
+    std::cout << "[GameServerMaster] DEBUG: Game server has been started" << "\n";
 }
 
 GameServerMaster::~GameServerMaster() {
     stop();
+
+    std::cout << "[GameServerMaster] DEBUG: Game server shutdown complete" << "\n";
 }
 
 bool GameServerMaster::initialize() {
@@ -40,7 +44,7 @@ void GameServerMaster::run_async() {
         m_running = true;
         m_accept_thread = std::thread(&GameServerMaster::accept_loop, this);
 
-        std::cout << "[GameServer] DEBUG: Accept thread has been created" << "\n";
+        std::cout << "[GameServerMaster] DEBUG: Accept thread has been created" << "\n";
     }
 }
 
@@ -56,7 +60,7 @@ void GameServerMaster::stop() {
         { 
             m_accept_thread.join();
 
-            std::cout << "[GameServer] DEBUG: Accept thread has been joined" << "\n";
+            std::cout << "[GameServerMaster] DEBUG: Accept thread has been joined" << "\n";
         }
     }
 }
@@ -96,7 +100,7 @@ void GameServerMaster::accept_loop() {
 
         if (!client_opt.has_value())
         {
-            std::cerr << "[GameServer] ERROR: Invalid connection attempt from the client" << "\n";
+            std::cerr << "[GameServerMaster] ERROR: Invalid connection attempt from the client" << "\n";
 
             continue;
         }
@@ -105,14 +109,14 @@ void GameServerMaster::accept_loop() {
             std::move(client_opt.value())
         );
 
-        std::cout << "[GameServer] DEBUG: client_conn accepted" << "\n";
+        std::cout << "[GameServerMaster] DEBUG: client_conn accepted" << "\n";
         
         auto current = m_active_instances.load();
 
         // CAS (Compare-And-Swap)
         if (m_active_instances >= m_max_instances || !m_active_instances.compare_exchange_strong(current, current + 1))
         {
-            std::cerr << "[GameServer] DEBUG: The maximum number of instances has been reached"
+            std::cerr << "[GameServerMaster] DEBUG: The maximum number of instances has been reached"
                       << " and the client connection has been refused." << "\n";
 
             client_conn->disconnect();
@@ -128,8 +132,8 @@ void GameServerMaster::accept_loop() {
             
         worker_thread.detach();
 
-        std::cout << "[GameServer] DEBUG: Game Instance has been created" << "\n"
-                  << "[GameServer] DEBUG: " << m_active_instances << " instances are active" << "\n";
+        std::cout << "[GameServerMaster] DEBUG: Game Instance has been created" << "\n"
+                  << "[GameServerMaster] DEBUG: " << m_active_instances << " instances are active" << "\n";
     }
 
     m_ready_to_accept = false;
@@ -194,7 +198,7 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
             break;
         }
 
-        // Process packet queue
+        // Process the packet queue
         while (true)
         {
             std::optional<Packet> packet_opt = stream.poll_packet();
@@ -210,21 +214,21 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
             {
                 case PayloadType::ClientHello:
                 {
-                    std::cout << "[GameServer] DEBUG: Received ClientHello" << "\n";
+                    std::cout << "[GameServerMaster] DEBUG: Received ClientHello" << "\n";
 
                     break;
                 }
 
                 case PayloadType::ClientGameRequest:
                 {
-                    std::cout << "[GameServer] DEBUG: Received ClientGameRequest" << "\n";
+                    std::cout << "[GameServerMaster] DEBUG: Received ClientGameRequest" << "\n";
 
                     break;
                 }
 
                 case PayloadType::ClientInput:
                 {
-                    std::cout << "[GameServer] DEBUG: Received ClientInput" << "\n";
+                    // std::cout << "[GameServerMaster] DEBUG: Received ClientInput" << "\n";
 
                     const auto input_snapshot = std::get<ClientInput>(packet.payload);
                     arrow_state.held |= input_snapshot.game_input.arrows.pressed;
@@ -235,7 +239,7 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
 
                 case PayloadType::ClientGoodBye:
                 {
-                    std::cout << "[GameServer] DEBUG: Received ClientGoodBye" << "\n";
+                    std::cout << "[GameServerMaster] DEBUG: Received ClientGoodBye" << "\n";
 
                     quit = true;
 
@@ -244,7 +248,7 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
 
                 default:
                 {
-                    std::cerr << "[GameServer] DEBUG: Unexpected message type: "
+                    std::cerr << "[GameServerMaster] DEBUG: Unexpected message type: "
                             << static_cast<uint32_t>(packet.header.payload_type) << "\n";
                     break;
                 }
@@ -257,6 +261,7 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
         const auto packet = make_packet<FrameSnapshot>(frame);
         stream.send_packet(packet);
 
+        // Adjust the frame rate
         auto frame_end = std::chrono::steady_clock::now();
         auto frame_duration = std::chrono::duration_cast<std::chrono::milliseconds>(frame_end - frame_start);
 
@@ -266,5 +271,5 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
         }
     }
 
-    std::cout << "[GameServer] DEBUG: Game Instance has been terminated successfully" << "\n";
+    std::cout << "[GameServerMaster] DEBUG: Game Instance has been terminated successfully" << "\n";
 }

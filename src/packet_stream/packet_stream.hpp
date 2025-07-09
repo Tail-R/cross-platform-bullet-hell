@@ -38,9 +38,17 @@ private:
     
     std::vector<std::byte>          m_buffer;
 
+    /*
+        Packet Queue (Frame Snapshot Only)
+        Frame shot packets are different from other messages in that
+        they prioritize drawing the latest frame over guaranteeing arrival,
+        so they have a dedicated queue. (For example, if there are multiple frames in the queue,
+        the drawing thread will only get the latest frame in the queue and discard the rest.)
+    */
     std::mutex                      m_frame_mutex;
-    std::queue<FrameSnapshot>       m_frame_queue;
+    std::deque<FrameSnapshot>       m_frame_queue;
 
+    // Packet queue (General)
     std::mutex                      m_message_mutex;
     std::queue<PacketPayload>       m_message_queue;
 
@@ -62,6 +70,7 @@ public:
     std::optional<Packet> poll_packet();
     bool send_packet(const Packet& packet);
 
+    // Returns true if there is an exception in the receive thread
     bool has_exception() const;
 
 private:
@@ -73,6 +82,8 @@ private:
     std::thread                         m_recv_thread;
 
     std::vector<std::byte>              m_buffer;
+
+    // Packet queue
     std::mutex                          m_packet_mutex;
     std::queue<Packet>                  m_packet_queue;
 

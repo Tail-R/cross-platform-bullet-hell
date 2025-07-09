@@ -52,8 +52,15 @@ std::optional<FrameSnapshot> PacketStreamClient::poll_frame() {
         return std::nullopt;
     }
 
-    const auto frame = std::move(m_frame_queue.front());
-    m_frame_queue.pop();
+    /*
+        Gets the latest frame
+    */
+    const auto frame = std::move(m_frame_queue.back());
+
+    /*
+        And discards the rest of frames
+    */
+    m_frame_queue.clear();
 
     return frame;
 }
@@ -79,6 +86,7 @@ bool PacketStreamClient::send_packet(const Packet& packet) {
     const auto expr2 = packet.header.payload_type == PayloadType::Unknown;
     const auto expr3 = actual_type == PayloadType::Unknown;
 
+    // Packet validation
     if (expr1 || expr2 || expr3)
     {
         std::cerr << "[PacketStreamClient] ERROR: Invalid payload, abort sending. "
@@ -89,6 +97,7 @@ bool PacketStreamClient::send_packet(const Packet& packet) {
         return false;
     }
 
+    // Serialize the payload into bytes
     std::vector<std::byte> payload_bytes;
 
     switch (packet.header.payload_type)
@@ -107,6 +116,7 @@ bool PacketStreamClient::send_packet(const Packet& packet) {
         }
     }
 
+    // Create header
     PacketHeader header = packet.header;
     
     header.magic_number     = PACKET_MAGIC_NUMBER;
@@ -137,7 +147,7 @@ void PacketStreamClient::receive_loop() {
         }
         else if (bytes_read == 0)
         {
-            std::cerr << "[PacketStreamClient] ERROR: Server disconnected (EOF)" << "\n";
+            std::cerr << "[PacketStreamClient] DEBUG: Server disconnected (EOF)" << "\n";
 
             m_running = false;
 
@@ -174,6 +184,7 @@ void PacketStreamClient::process_buffer() {
         if (header.magic_number != PACKET_MAGIC_NUMBER)
         {
             offset++;
+
             continue;
         }
 
@@ -200,7 +211,7 @@ void PacketStreamClient::process_buffer() {
                 if (auto opt = deserialize_frame(payload))
                 {
                     std::lock_guard<std::mutex> lock(m_frame_mutex);
-                    m_frame_queue.push(*opt);
+                    m_frame_queue.push_back(*opt);
                 }
                 break;
             }
@@ -292,6 +303,7 @@ bool PacketStreamServer::send_packet(const Packet& packet) {
     const auto expr2 = packet.header.payload_type == PayloadType::Unknown;
     const auto expr3 = actual_type == PayloadType::Unknown;
 
+    // Packet validation
     if (expr1 || expr2 || expr3)
     {
         std::cerr << "[PacketStreamServer] ERROR: Invalid payload, abort sending. "
@@ -301,6 +313,7 @@ bool PacketStreamServer::send_packet(const Packet& packet) {
         return false;
     }
 
+    // Serialize the payload into bytes
     std::vector<std::byte> payload_bytes;
 
     switch (packet.header.payload_type)
@@ -332,6 +345,7 @@ bool PacketStreamServer::send_packet(const Packet& packet) {
         }
     }
 
+    // Create header
     PacketHeader header = packet.header;
 
     header.magic_number     = PACKET_MAGIC_NUMBER;
@@ -411,6 +425,7 @@ void PacketStreamServer::process_buffer() {
         if (header.magic_number != PACKET_MAGIC_NUMBER)
         {
             offset++;
+            
             continue;
         }
 
