@@ -14,6 +14,7 @@ PacketStreamClient::PacketStreamClient(std::shared_ptr<ClientSocket> socket)
     : m_socket(std::move(socket))
     , m_running(false)
     , m_send_sequence(0)
+    , m_recv_thread_exception(nullptr)
 {}
 
 PacketStreamClient::~PacketStreamClient() {
@@ -25,7 +26,19 @@ void PacketStreamClient::start() {
     {
         m_running = true;
 
-        m_recv_thread = std::thread(&PacketStreamClient::receive_loop, this);
+        m_recv_thread = std::thread([this]() {
+            try
+            {
+                receive_loop();
+            }
+            catch (const std::exception& e)
+            {
+                m_recv_thread_exception = std::current_exception();
+
+                std::cerr << "[PacketStreamClient] ERROR: Receive thread threw an exception: " << e.what() << "\n";
+            }
+        });
+
         std::cout << "[PacketStreamClient] DEBUG: Receive thread has been created" << "\n";
     }
 }
@@ -40,14 +53,23 @@ void PacketStreamClient::stop() {
         {
             m_recv_thread.join();
             std::cout << "[PacketStreamClient] DEBUG: Receive thread has been joined" << "\n";
+
+            if (get_recv_exception())
+            {
+                std::cerr << "[PacketStreamClient] ERROR: Detected stream exception" << "\n";
+            }
         }
     }
+}
+
+bool PacketStreamClient::is_running() const {
+    return m_running;
 }
 
 std::optional<FrameSnapshot> PacketStreamClient::poll_frame() {
     std::lock_guard<std::mutex> lock(m_frame_mutex);
 
-    if (m_frame_queue.empty())
+    if (!is_running() || m_frame_queue.empty())
     {
         return std::nullopt;
     }
@@ -68,7 +90,7 @@ std::optional<FrameSnapshot> PacketStreamClient::poll_frame() {
 std::optional<PacketPayload> PacketStreamClient::poll_message() {
     std::lock_guard<std::mutex> lock(m_message_mutex);
 
-    if (m_message_queue.empty())
+    if (!m_running || m_message_queue.empty())
     {
         return std::nullopt;
     }
@@ -134,6 +156,10 @@ bool PacketStreamClient::send_packet(const Packet& packet) {
     return m_socket->send_data(buffer);
 }
 
+std::exception_ptr PacketStreamClient::get_recv_exception() const {
+    return m_recv_thread_exception;
+}
+
 void PacketStreamClient::receive_loop() {
     std::byte temp_buffer[TEMP_BUFFER_SIZE];
 
@@ -149,15 +175,12 @@ void PacketStreamClient::receive_loop() {
         {
             std::cerr << "[PacketStreamClient] DEBUG: Server disconnected (EOF)" << "\n";
 
-            m_running = false;
-
             break;
         }
         else if (bytes_read < 0)
         {
-            std::cerr << "[PacketStreamClient] ERROR: Recv failed: " << strerror(errno) << "\n";
-
-            m_running = false;
+            std::cerr << "[PacketStreamClient] ERROR: Recv failed: " << strerror(errno)
+                      << " (errno=" << errno << ")" << "\n";
 
             break;
         }
@@ -202,10 +225,10 @@ void PacketStreamClient::process_buffer() {
 
         switch (payload_type)
         {
-            case PayloadType::ServerAccept:             { if (auto opt = deserialize_server_accept(payload)) message = *opt; break; }
-            case PayloadType::ServerGoodbye:            { if (auto opt = deserialize_server_goodbye(payload)) message = *opt; break; }
-            case PayloadType::ServerGameResponse:       { if (auto opt = deserialize_server_game_response(payload)) message = *opt; break; }
-            case PayloadType::ServerReconnectResponse:  { if (auto opt = deserialize_server_reconnect_response(payload)) message = *opt; break; }
+            case PayloadType::ServerAccept:             { if (auto opt = deserialize_server_accept(payload))                message = *opt; break; }
+            case PayloadType::ServerGoodbye:            { if (auto opt = deserialize_server_goodbye(payload))               message = *opt; break; }
+            case PayloadType::ServerGameResponse:       { if (auto opt = deserialize_server_game_response(payload))         message = *opt; break; }
+            case PayloadType::ServerReconnectResponse:  { if (auto opt = deserialize_server_reconnect_response(payload))    message = *opt; break; }
             case PayloadType::FrameSnapshot:
             {
                 if (auto opt = deserialize_frame(payload))
@@ -246,7 +269,7 @@ PacketStreamServer::PacketStreamServer(std::shared_ptr<ClientConnection> connect
     : m_connection(std::move(connection))
     , m_running(false)
     , m_send_sequence(0)
-    , m_thread_exception(nullptr)
+    , m_recv_thread_exception(nullptr)
 {}
 
 PacketStreamServer::~PacketStreamServer() {
@@ -257,7 +280,7 @@ void PacketStreamServer::start() {
     if (!m_running)
     {
         m_running = true;
-        m_thread_exception = nullptr;
+        m_recv_thread_exception = nullptr;
 
         m_recv_thread = std::thread([this]() {
             try
@@ -266,7 +289,7 @@ void PacketStreamServer::start() {
             }
             catch (const std::exception& e)
             {
-                m_thread_exception = std::current_exception();
+                m_recv_thread_exception = std::current_exception();
                 
                 std::cerr << "[PacketStreamServer] ERROR: Receive thread threw an exception: " << e.what() << "\n";
             }
@@ -288,12 +311,16 @@ void PacketStreamServer::stop() {
             
             std::cout << "[PacketStreamServer] DEBUG: Receive thread has been joined" << "\n";
 
-            if (has_exception())
+            if (get_recv_exception())
             {
-                std::cerr << "[PacketStreamServer] ERROR: Detected stream exception, terminating client instance" << "\n";
+                std::cerr << "[PacketStreamServer] ERROR: Detected stream exception" << "\n";
             }
         }
     }
+}
+
+bool PacketStreamServer::is_running() const {
+    return m_running;
 }
 
 bool PacketStreamServer::send_packet(const Packet& packet) {
@@ -366,7 +393,7 @@ bool PacketStreamServer::send_packet(const Packet& packet) {
 std::optional<Packet> PacketStreamServer::poll_packet() {
     std::lock_guard<std::mutex> lock(m_packet_mutex);
 
-    if (m_packet_queue.empty())
+    if (!m_running || m_packet_queue.empty())
     {
         return std::nullopt;
     }
@@ -377,8 +404,8 @@ std::optional<Packet> PacketStreamServer::poll_packet() {
     return packet;
 }
 
-bool PacketStreamServer::has_exception() const {
-    return m_thread_exception != nullptr;
+std::exception_ptr PacketStreamServer::get_recv_exception() const {
+    return m_recv_thread_exception;
 }
 
 void PacketStreamServer::receive_loop() {

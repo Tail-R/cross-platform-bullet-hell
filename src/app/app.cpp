@@ -54,6 +54,8 @@ AppResult App::run() {
     auto wait_packet = [&](PayloadType payload_type, size_t timeout_msec, size_t max_attempts) -> bool {
         for (size_t attempt = 0; attempt < max_attempts; attempt++)
         {
+            std::this_thread::sleep_for(std::chrono::milliseconds(timeout_msec));
+
             std::optional<PacketPayload> payload_opt = packet_stream.poll_message();
 
             if (payload_opt.has_value())
@@ -63,8 +65,6 @@ AppResult App::run() {
                     return true;
                 }
             }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(timeout_msec));
         }
 
         return false;
@@ -222,6 +222,9 @@ AppResult App::run() {
             AppExitStatus::ServerTimeout
         };
     }
+
+    packet_stream.stop();
+    client_socket->disconnect();
 
     return AppResult {
         AppExitStatus::Success

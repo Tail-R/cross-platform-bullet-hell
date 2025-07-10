@@ -22,11 +22,15 @@ public:
 
     void start();
     void stop();
+    bool is_running() const;
 
     std::optional<FrameSnapshot> poll_frame();
     std::optional<PacketPayload> poll_message();
 
     bool send_packet(const Packet& packet);
+
+    // Returns std::exception_ptr if there is an exception in the receive thread
+    std::exception_ptr get_recv_exception() const;
 
 private:
     void receive_loop();
@@ -53,6 +57,8 @@ private:
     std::queue<PacketPayload>       m_message_queue;
 
     std::atomic<uint32_t>           m_send_sequence;
+
+    std::exception_ptr              m_recv_thread_exception;
 };
 
 class PacketStreamServer {
@@ -66,12 +72,13 @@ public:
 
     void start();
     void stop();
+    bool is_running() const;
 
     std::optional<Packet> poll_packet();
     bool send_packet(const Packet& packet);
 
-    // Returns true if there is an exception in the receive thread
-    bool has_exception() const;
+    // Returns std::exception_ptr if there is an exception in the receive thread
+    std::exception_ptr get_recv_exception() const;
 
 private:
     void receive_loop();
@@ -89,5 +96,5 @@ private:
 
     std::atomic<uint32_t>               m_send_sequence;
 
-    std::exception_ptr                  m_thread_exception;
+    std::exception_ptr                  m_recv_thread_exception;
 };

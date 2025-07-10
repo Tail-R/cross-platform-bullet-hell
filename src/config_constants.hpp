@@ -1,6 +1,6 @@
 #pragma once
 
-#define ENABLE_LOCAL_SERVER
+// #define ENABLE_LOCAL_SERVER
 #define BUILD_CLIENT
 // #define BUILD_SERVER
 

@@ -70,10 +70,9 @@ int main(int argc, char* args[]) {
         return EXIT_FAILURE;
     }
 
-    const auto game_server_result = game_server_master->run();
-    const auto exit_status = static_cast<int>(game_server_result.exit_status);
+    game_server_master->run();
 
-    std::cout << "[main] Goodbye with exit status: " << exit_status << "\n";
+    std::cout << "[main] Goodbye" << "\n";
 
     return exit_status;
 #endif

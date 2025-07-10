@@ -234,7 +234,9 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
         auto frame_start = std::chrono::steady_clock::now();
 
         // Check if the recv thread is alive
-        if (packet_stream.has_exception())
+        auto recv_exception = packet_stream.get_recv_exception();
+
+        if (recv_exception != nullptr)
         {
             break;
         }
@@ -255,7 +257,7 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
             {
                 case PayloadType::ClientInput:
                 {
-                    std::cout << "[GameServerMaster] DEBUG: Received ClientInput" << "\n";
+                    std::cout << "[GameServerMaster] DEBUG: Received client input" << "\n";
 
                     const auto input_snapshot = std::get<ClientInput>(packet.payload);
                     arrow_state.held |= input_snapshot.game_input.arrows.pressed;
@@ -266,11 +268,10 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
 
                 case PayloadType::ClientGoodbye:
                 {
-                    std::cout << "[GameServerMaster] DEBUG: Received ClientGoodBye" << "\n";
+                    std::cout << "[GameServerMaster] DEBUG: Received client goodbye" << "\n";
 
-                    // Send server goodbye
-                    packet_stream.send_packet(make_packet<ServerGoodbye>({}));
-                    std::cout << "[GameServerMaster] DEBUG: Server goodbye has been sent" << "\n";
+                    const auto packet = make_packet<ServerGoodbye>({});
+                    packet_stream.send_packet(packet);
 
                     quit = true;
 
@@ -305,6 +306,9 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
             std::cerr << "[GameServerMaster] ERROR: The game logic update could not be completed within the specified FPS" << "\n";
         }
     }
+
+    packet_stream.stop();
+    client_conn->disconnect();
 
     std::cout << "[GameServerMaster] DEBUG: Game Instance has been terminated successfully" << "\n";
 }
