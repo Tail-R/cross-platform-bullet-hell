@@ -10,6 +10,8 @@ int main(int argc, char* args[]) {
     static_cast<void>(argc);
     static_cast<void>(args);
 
+    std::cout << "[main] Hello" << "\n";
+
 #ifdef BUILD_CLIENT
     #ifdef ENABLE_LOCAL_SERVER
         auto game_server_master = std::make_shared<GameServerMaster>(
@@ -47,9 +49,13 @@ int main(int argc, char* args[]) {
         return EXIT_FAILURE;
     }
 
-    auto app_result = app.run();
+    const auto app_result = app.run();
+    const auto exit_status = static_cast<int>(app_result.exit_status);
+    
+    std::cout << "[main] Goodbye with exit status: " << exit_status << "\n";
 
-    return app_result.code;
+    return exit_status;
+
 
 #elif defined(BUILD_SERVER)
     auto game_server_master = std::make_shared<GameServerMaster>(
@@ -60,12 +66,15 @@ int main(int argc, char* args[]) {
     if (!game_server_master->initialize())
     {
         std::cerr << "[main] Failed to initialize game server master" << "\n";
-    }
-    else
-    {
-        std::cout <<"[main] Game server master has been initialized" << "\n";
+
+        return EXIT_FAILURE;
     }
 
-    game_server_master->run();
+    const auto game_server_result = game_server_master->run();
+    const auto exit_status = static_cast<int>(game_server_result.exit_status);
+
+    std::cout << "[main] Goodbye with exit status: " << exit_status << "\n";
+
+    return exit_status;
 #endif
 }

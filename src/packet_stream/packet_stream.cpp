@@ -103,7 +103,7 @@ bool PacketStreamClient::send_packet(const Packet& packet) {
     switch (packet.header.payload_type)
     {
         case PayloadType::ClientHello:              { payload_bytes = serialize_client_hello(std::get<ClientHello>(packet.payload)); break; }
-        case PayloadType::ClientGoodBye:            { payload_bytes = serialize_client_goodbye(std::get<ClientGoodBye>(packet.payload)); break; }
+        case PayloadType::ClientGoodbye:            { payload_bytes = serialize_client_goodbye(std::get<ClientGoodbye>(packet.payload)); break; }
         case PayloadType::ClientGameRequest:        { payload_bytes = serialize_client_game_request(std::get<ClientGameRequest>(packet.payload)); break; }
         case PayloadType::ClientReconnectRequest:   { payload_bytes = serialize_client_reconnect_request(std::get<ClientReconnectRequest>(packet.payload)); break; }
         case PayloadType::ClientInput:              { payload_bytes = serialize_client_input(std::get<ClientInput>(packet.payload)); break; }
@@ -203,7 +203,7 @@ void PacketStreamClient::process_buffer() {
         switch (payload_type)
         {
             case PayloadType::ServerAccept:             { if (auto opt = deserialize_server_accept(payload)) message = *opt; break; }
-            case PayloadType::ServerGoodBye:            { if (auto opt = deserialize_server_goodbye(payload)) message = *opt; break; }
+            case PayloadType::ServerGoodbye:            { if (auto opt = deserialize_server_goodbye(payload)) message = *opt; break; }
             case PayloadType::ServerGameResponse:       { if (auto opt = deserialize_server_game_response(payload)) message = *opt; break; }
             case PayloadType::ServerReconnectResponse:  { if (auto opt = deserialize_server_reconnect_response(payload)) message = *opt; break; }
             case PayloadType::FrameSnapshot:
@@ -319,7 +319,7 @@ bool PacketStreamServer::send_packet(const Packet& packet) {
     switch (packet.header.payload_type)
     {
         case PayloadType::ServerAccept:             { payload_bytes = serialize_server_accept(std::get<ServerAccept>(packet.payload)); break; }
-        case PayloadType::ServerGoodBye:            { payload_bytes = serialize_server_goodbye(std::get<ServerGoodBye>(packet.payload)); break; }
+        case PayloadType::ServerGoodbye:            { payload_bytes = serialize_server_goodbye(std::get<ServerGoodbye>(packet.payload)); break; }
         case PayloadType::ServerGameResponse:       { payload_bytes = serialize_server_game_response(std::get<ServerGameResponse>(packet.payload)); break; }
         case PayloadType::ServerReconnectResponse:  { payload_bytes = serialize_server_reconnect_response(std::get<ServerReconnectResponse>(packet.payload)); break; }
         case PayloadType::FrameSnapshot:
@@ -444,7 +444,7 @@ void PacketStreamServer::process_buffer() {
         switch (payload_type)
         {
             case PayloadType::ClientHello:              { if (auto opt = deserialize_client_hello(payload)) message = *opt; break; }
-            case PayloadType::ClientGoodBye:            { if (auto opt = deserialize_client_goodbye(payload)) message = *opt; break; }
+            case PayloadType::ClientGoodbye:            { if (auto opt = deserialize_client_goodbye(payload)) message = *opt; break; }
             case PayloadType::ClientGameRequest:        { if (auto opt = deserialize_client_game_request(payload)) message = *opt; break; }
             case PayloadType::ClientReconnectRequest:   { if (auto opt = deserialize_client_reconnect_request(payload)) message = *opt; break; }
             case PayloadType::ClientInput:              { if (auto opt = deserialize_client_input(payload)) message = *opt; break; }

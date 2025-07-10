@@ -10,7 +10,6 @@
 #include "../assets_factory/texture_factory.hpp"
 
 #include "../packet_stream/packet_stream.hpp"
-#include "../game_server/game_server.hpp"
 
 App::App()
     : m_sdl_window(nullptr)
@@ -18,21 +17,18 @@ App::App()
     , m_sdl_initialized(false)
     , m_sdl_gl_initialized(false)
 {
-    std::cout << "[App] DEBUG: App has been started" << "\n";
-
     start_async_logger(logger_constants::LOG_FILE_NAME.data());
+    async_log(LogLevel::Debug, "App has been started");
 }
 
 App::~App() {
     cleanup();
 
+    async_log(LogLevel::Debug, "App shutdown complete");
     stop_async_logger();
-
-    std::cout << "[App] DEBUG: App shutdown complete" << "\n";
 }
 
 AppResult App::run() {
-    AppResult app_result;
     InputManager input_manager;
 
     auto client_socket = std::make_shared<ClientSocket>(
@@ -42,41 +38,84 @@ AppResult App::run() {
 
     if (!client_socket->connect_to_server())
     {
-        std::cerr << "[App] DEBUG: Failed to connect to server" << "\n";
+        async_log(LogLevel::Error, "Failed to connect to server");
 
-        return app_result;
+        return AppResult {
+            AppExitStatus::SocketError
+        };
     }
+
+    show_window();
 
     PacketStreamClient packet_stream(client_socket);
     packet_stream.start();
 
-    // Set viewport as display size
-    // SDL_DisplayMode disp_mode;
-    // SDL_GetCurrentDisplayMode(0, &disp_mode);
-    // glViewport(0, 0, disp_mode.w, disp_mode.h);
+    // A closure that waits for a specific packet to arrive.
+    auto wait_packet = [&](PayloadType payload_type, size_t timeout_msec, size_t max_attempts) -> bool {
+        for (size_t attempt = 0; attempt < max_attempts; attempt++)
+        {
+            std::optional<PacketPayload> payload_opt = packet_stream.poll_message();
 
-    bool quit = false;
+            if (payload_opt.has_value())
+            {
+                if (get_payload_type(payload_opt.value()) == payload_type)
+                {
+                    return true;
+                }
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(timeout_msec));
+        }
+
+        return false;
+    };
+
+    // Send client hello
+    packet_stream.send_packet(make_packet<ClientHello>({}));
+    async_log(LogLevel::Debug, "Client hello has been sent");
+
+    // Wait for server accept
+    if (!wait_packet(PayloadType::ServerAccept, 1000, 10))
+    {
+        async_log(LogLevel::Error, "Server accept timeout");
+
+        return AppResult {
+            AppExitStatus::ServerTimeout
+        };
+    }
+
+    // Send game request
+    packet_stream.send_packet(make_packet<ClientGameRequest>({}));
+    async_log(LogLevel::Debug, "Client game request has been sent");
  
-    auto mf = MeshFactory();
-    auto sf = ShaderFactory();
-    auto tf = TextureFactory();
+    // Factories
+    auto mesh_factory = MeshFactory();
+    auto shader_factory = ShaderFactory();
+    auto texture_factory = TextureFactory();
 
-    const auto mesh_path        = std::string(assets_constants::MESH_DIR)       + "/square.lua";
+    // Player assets
+    const auto p_mesh_path      = std::string(assets_constants::MESH_DIR)       + "/square.lua";
+    const auto p_shader_path    = std::string(assets_constants::SHADER_DIR)     + "/green_aura.lua";
+    const auto p_texture_path   = std::string(assets_constants::TEXTURE_DIR)    + "/zunmon_3002.png";
+
+    // Background assets
     const auto bg_mesh_path     = std::string(assets_constants::MESH_DIR)       + "/full_size.lua";
-    const auto shader_path      = std::string(assets_constants::SHADER_DIR)     + "/green_aura.lua";
     const auto bg_shader_path   = std::string(assets_constants::SHADER_DIR)     + "/basic.lua";
-    const auto texture_path     = std::string(assets_constants::TEXTURE_DIR)    + "/zunmon_3002.png";
     const auto bg_texture_path  = std::string(assets_constants::TEXTURE_DIR)    + "/background109.png"; 
 
-    mf.load_mesh(mesh_path);
-    mf.load_mesh(bg_mesh_path);
-    sf.load_shader(shader_path);
-    sf.load_shader(bg_shader_path);
-    tf.load_texture(texture_path);
-    tf.load_texture(bg_texture_path);
+    // Load player assets
+    mesh_factory.load_mesh(p_mesh_path);
+    shader_factory.load_shader(p_shader_path);
+    texture_factory.load_texture(p_texture_path);
+
+    // Load background assets
+    mesh_factory.load_mesh(bg_mesh_path);
+    shader_factory.load_shader(bg_shader_path);
+    texture_factory.load_texture(bg_texture_path);
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
+    bool quit = false;
     float x_offset = 0.0;
     float y_offset = 0.0;
     float speed = 2.0f;
@@ -84,7 +123,15 @@ AppResult App::run() {
     Uint64 last = 0;
     float total_time = 0.0;
 
-    show_window();
+    // Wait for server game response
+    if (!wait_packet(PayloadType::ServerGameResponse, 1000, 10))
+    {
+        async_log(LogLevel::Error, "Server game response timeout");
+
+        return AppResult {
+            AppExitStatus::ServerTimeout
+        };
+    }
 
     while (!quit)
     {
@@ -96,20 +143,21 @@ AppResult App::run() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         input_manager.collect_input_events();
+        const auto game_input = input_manager.get_game_input();
+
+        // Quit events
+        const auto expr_1 = input_manager.get_quit_request();
+        const auto expr_2 = game_input.pressed.test(static_cast<size_t>(GameAction::OpenMenu));
         
-        if (input_manager.get_quit_request())
+        if (expr_1 || expr_2)
         {
+            // Send client goodbye
+            packet_stream.send_packet(make_packet<ClientGoodbye>({}));
+            async_log(LogLevel::Debug, "Client goodbye has been sent");
+            async_log(LogLevel::Debug, "Quit has been pressed");
+            async_log(LogLevel::Debug, "Exiting the draw loop");
+
             quit = true;
-        }
-
-        auto game_input = input_manager.get_game_input();
-
-        if (game_input.pressed.test(static_cast<size_t>(GameAction::Shoot)))
-        {
-            quit = true;
-
-            std::cout << "[App] DEBUG: Quit has been pressed" << "\n"
-                      << "[App] DEBUG: Exiting the draw loop" << "\n";
         } 
 
         // Send client input
@@ -123,7 +171,7 @@ AppResult App::run() {
 
             if (!send_result)
             {
-                std::cerr << "[App] ERROR: Failed to send client input" << "\n";
+                async_log(LogLevel::Error, "Failed to send client input");
             }
         }
 
@@ -136,10 +184,10 @@ AppResult App::run() {
             y_offset = frame_opt.value().player_vector[0].pos.y;
         }
 
-        // Background
-        auto mesh = mf.get_mesh(bg_mesh_path);
-        auto shader = sf.get_shader(bg_shader_path);
-        auto texture = tf.get_texture(bg_texture_path);
+        // Draw background
+        auto mesh = mesh_factory.get_mesh(bg_mesh_path);
+        auto shader = shader_factory.get_shader(bg_shader_path);
+        auto texture = texture_factory.get_texture(bg_texture_path);
 
         shader->use();
         shader->set_float("time", total_time);
@@ -149,10 +197,10 @@ AppResult App::run() {
         mesh->bind();
         mesh->draw();
 
-        // Player
-        mesh = mf.get_mesh(mesh_path);
-        shader = sf.get_shader(shader_path);
-        texture = tf.get_texture(texture_path);
+        // Draw player
+        mesh = mesh_factory.get_mesh(p_mesh_path);
+        shader = shader_factory.get_shader(p_shader_path);
+        texture = texture_factory.get_texture(p_texture_path);
 
         shader->use();
         shader->set_float("time", total_time);
@@ -165,13 +213,19 @@ AppResult App::run() {
         SDL_GL_SwapWindow(m_sdl_window);
     }
 
-    // game_server_master->stop();
-    packet_stream.stop();
-    client_socket->disconnect();
+    // Wait for server goodbye
+    if (!wait_packet(PayloadType::ServerGoodbye, 1000, 10))
+    {
+        async_log(LogLevel::Error, "Server goodbye timeout");
 
-    hide_window();
+        return AppResult {
+            AppExitStatus::ServerTimeout
+        };
+    }
 
-    return app_result;
+    return AppResult {
+        AppExitStatus::Success
+    };
 }
 
 bool App::initialize(const SDLConfig& sdl_config, const GLConfig& gl_config) {
@@ -267,8 +321,8 @@ bool App::init_gl(const GLConfig& gl_config) {
     }
 
     /*
-        1 = VSync ON (Synchronize to display refresh rate)
-        0 = VSync OFF (Immediate update)
+         1 = VSync ON (Synchronize to display refresh rate)
+         0 = VSync OFF (Immediate update)
         -1 = Adaptive VSync (Enable if its supported)
     */
     auto interval = static_cast<int>(gl_config.vsync_mode);

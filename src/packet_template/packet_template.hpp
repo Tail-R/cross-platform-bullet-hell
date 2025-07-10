@@ -10,8 +10,8 @@
 using PacketPayload = std::variant<
     ClientHello,
     ServerAccept,
-    ClientGoodBye,
-    ServerGoodBye,
+    ClientGoodbye,
+    ServerGoodbye,
     ClientGameRequest,
     ServerGameResponse,
     ClientReconnectRequest,

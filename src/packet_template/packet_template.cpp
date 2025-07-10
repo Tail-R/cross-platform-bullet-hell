@@ -6,8 +6,8 @@ PayloadType get_payload_type(const PacketPayload& payload) {
 
         if      constexpr (std::is_same_v<T, ClientHello>)              return PayloadType::ClientHello;
         else if constexpr (std::is_same_v<T, ServerAccept>)             return PayloadType::ServerAccept;
-        else if constexpr (std::is_same_v<T, ClientGoodBye>)            return PayloadType::ClientGoodBye;
-        else if constexpr (std::is_same_v<T, ServerGoodBye>)            return PayloadType::ServerGoodBye;
+        else if constexpr (std::is_same_v<T, ClientGoodbye>)            return PayloadType::ClientGoodbye;
+        else if constexpr (std::is_same_v<T, ServerGoodbye>)            return PayloadType::ServerGoodbye;
         else if constexpr (std::is_same_v<T, ClientGameRequest>)        return PayloadType::ClientGameRequest;
         else if constexpr (std::is_same_v<T, ServerGameResponse>)       return PayloadType::ServerGameResponse;
         else if constexpr (std::is_same_v<T, ClientReconnectRequest>)   return PayloadType::ClientReconnectRequest;

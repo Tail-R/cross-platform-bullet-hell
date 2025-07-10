@@ -15,14 +15,10 @@ GameServerMaster::GameServerMaster(uint16_t server_port, size_t max_instances)
     m_server_socket = std::make_shared<ServerSocket>(
         server_port
     );
-
-    std::cout << "[GameServerMaster] DEBUG: Game server has been started" << "\n";
 }
 
 GameServerMaster::~GameServerMaster() {
     stop();
-
-    std::cout << "[GameServerMaster] DEBUG: Game server shutdown complete" << "\n";
 }
 
 bool GameServerMaster::initialize() {
@@ -32,8 +28,9 @@ bool GameServerMaster::initialize() {
 void GameServerMaster::run() {
     if (!m_running)
     {
-        m_running = true;
+        std::cout << "[GameServerMaster] DEBUG: Game server has been started" << "\n";
 
+        m_running = true;
         accept_loop();
     }
 }
@@ -171,8 +168,28 @@ void apply_player_input(
 }
 
 void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_conn) {
-    PacketStreamServer stream(client_conn);
-    stream.start();
+    PacketStreamServer packet_stream(client_conn);
+    packet_stream.start();
+
+    // A closure that waits for a specific packet to arrive.
+    auto wait_packet = [&](PayloadType payload_type, size_t timeout_msec, size_t max_attempts) -> bool {
+        for (size_t attempt = 0; attempt < max_attempts; attempt++)
+        {
+            std::optional<Packet> packet_opt = packet_stream.poll_packet();
+
+            if (packet_opt.has_value())
+            {
+                if (packet_opt.value().header.payload_type == payload_type)
+                {
+                    return true;
+                }
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(timeout_msec));
+        }
+
+        return false;
+    };
 
     FrameSnapshot frame = {};
     frame.player_count = 1;
@@ -187,13 +204,37 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
     // msec / FPS
     constexpr auto target_frame_duration = std::chrono::milliseconds(1000 / 60);
 
+    // Wait for client hello
+    if (!wait_packet(PayloadType::ClientHello, 1000, 10))
+    {
+        std::cout << "[GameServerMaster] DEBUG: Client hello timeout" << "\n";
+
+        return;
+    }
+
+    // Send server accept
+    packet_stream.send_packet(make_packet<ServerAccept>({}));
+    std::cout << "[GameServerMaster] DEBUG: Server accept has been sent" << "\n";
+
+    // Wait for client game request
+    if (!wait_packet(PayloadType::ClientGameRequest, 1000, 1000))
+    {
+        std::cout << "[GameServerMaster] DEBUG: Client game request timeout" << "\n";
+
+        return;
+    }
+
+    // Send server game response
+    packet_stream.send_packet(make_packet<ServerGameResponse>({}));
+    std::cout << "[GameServerMaster] DEBUG: Server game response has been sent" << "\n";
+
     // Game logic loop
     while (m_running && !quit)
     {
         auto frame_start = std::chrono::steady_clock::now();
 
         // Check if the recv thread is alive
-        if (stream.has_exception())
+        if (packet_stream.has_exception())
         {
             break;
         }
@@ -201,7 +242,7 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
         // Process the packet queue
         while (true)
         {
-            std::optional<Packet> packet_opt = stream.poll_packet();
+            std::optional<Packet> packet_opt = packet_stream.poll_packet();
 
             if (!packet_opt.has_value())
             {
@@ -212,23 +253,9 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
 
             switch (packet.header.payload_type)
             {
-                case PayloadType::ClientHello:
-                {
-                    std::cout << "[GameServerMaster] DEBUG: Received ClientHello" << "\n";
-
-                    break;
-                }
-
-                case PayloadType::ClientGameRequest:
-                {
-                    std::cout << "[GameServerMaster] DEBUG: Received ClientGameRequest" << "\n";
-
-                    break;
-                }
-
                 case PayloadType::ClientInput:
                 {
-                    // std::cout << "[GameServerMaster] DEBUG: Received ClientInput" << "\n";
+                    std::cout << "[GameServerMaster] DEBUG: Received ClientInput" << "\n";
 
                     const auto input_snapshot = std::get<ClientInput>(packet.payload);
                     arrow_state.held |= input_snapshot.game_input.arrows.pressed;
@@ -237,9 +264,13 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
                     break;
                 }
 
-                case PayloadType::ClientGoodBye:
+                case PayloadType::ClientGoodbye:
                 {
                     std::cout << "[GameServerMaster] DEBUG: Received ClientGoodBye" << "\n";
+
+                    // Send server goodbye
+                    packet_stream.send_packet(make_packet<ServerGoodbye>({}));
+                    std::cout << "[GameServerMaster] DEBUG: Server goodbye has been sent" << "\n";
 
                     quit = true;
 
@@ -259,7 +290,7 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
         apply_player_input(frame.player_vector[0], direction);
                 
         const auto packet = make_packet<FrameSnapshot>(frame);
-        stream.send_packet(packet);
+        packet_stream.send_packet(packet);
 
         // Adjust the frame rate
         auto frame_end = std::chrono::steady_clock::now();
@@ -268,6 +299,10 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
         if (frame_duration < target_frame_duration)
         {
             std::this_thread::sleep_for(target_frame_duration - frame_duration);
+        }
+        else
+        {
+            std::cerr << "[GameServerMaster] ERROR: The game logic update could not be completed within the specified FPS" << "\n";
         }
     }
 

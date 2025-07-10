@@ -26,16 +26,16 @@ struct ServerAccept {
 /*
     Goodbye
 */
-struct ClientGoodBye {
+struct ClientGoodbye {
     GoodByeReasonCode reason_code;
 };
 
 constexpr size_t CLIENT_GOODBYE_SIZE = 4;
-static_assert(sizeof(ClientGoodBye) == CLIENT_GOODBYE_SIZE);
+static_assert(sizeof(ClientGoodbye) == CLIENT_GOODBYE_SIZE);
 
-struct ServerGoodBye {
+struct ServerGoodbye {
     GoodByeReasonCode reason_code;
 };
 
 constexpr size_t SERVER_GOODBYE_SIZE = 4;
-static_assert(sizeof(ServerGoodBye) == SERVER_GOODBYE_SIZE);
+static_assert(sizeof(ServerGoodbye) == SERVER_GOODBYE_SIZE);

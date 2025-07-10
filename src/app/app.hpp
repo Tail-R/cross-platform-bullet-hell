@@ -38,9 +38,14 @@ struct GLConfig {
     GLenum      custom_blend_dst = GL_ONE_MINUS_SRC_ALPHA;
 };
 
+enum class AppExitStatus : int {
+    Success         = 0,
+    SocketError     = 1,
+    ServerTimeout   = 2
+};
+
 struct AppResult {
-    int         code            = 1;
-    size_t      time_elapsed    = 0;
+    AppExitStatus exit_status;
 };
 
 class App {

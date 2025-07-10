@@ -41,11 +41,11 @@ std::vector<std::byte> serialize_server_accept(const ServerAccept& payload) {
     return serialize_trivial_struct(payload);
 }
 
-std::vector<std::byte> serialize_client_goodbye(const ClientGoodBye& payload) {
+std::vector<std::byte> serialize_client_goodbye(const ClientGoodbye& payload) {
     return serialize_trivial_struct(payload);
 }
 
-std::vector<std::byte> serialize_server_goodbye(const ServerGoodBye& payload) {
+std::vector<std::byte> serialize_server_goodbye(const ServerGoodbye& payload) {
     return serialize_trivial_struct(payload);
 }
 
@@ -72,10 +72,10 @@ std::optional<ServerAccept> deserialize_server_accept(const std::vector<std::byt
     return deserialize_trivial_struct<ServerAccept>(buffer);
 }
 
-std::optional<ClientGoodBye> deserialize_client_goodbye(const std::vector<std::byte>& buffer) {
-    return deserialize_trivial_struct<ClientGoodBye>(buffer);
+std::optional<ClientGoodbye> deserialize_client_goodbye(const std::vector<std::byte>& buffer) {
+    return deserialize_trivial_struct<ClientGoodbye>(buffer);
 }
 
-std::optional<ServerGoodBye> deserialize_server_goodbye(const std::vector<std::byte>& buffer) {
-    return deserialize_trivial_struct<ServerGoodBye>(buffer);
+std::optional<ServerGoodbye> deserialize_server_goodbye(const std::vector<std::byte>& buffer) {
+    return deserialize_trivial_struct<ServerGoodbye>(buffer);
 }
