@@ -74,6 +74,6 @@ int main(int argc, char* args[]) {
 
     std::cout << "[main] Goodbye" << "\n";
 
-    return exit_status;
+    return 0;
 #endif
 }

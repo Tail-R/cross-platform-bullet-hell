@@ -234,9 +234,10 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
         auto frame_start = std::chrono::steady_clock::now();
 
         // Check if the recv thread is alive
-        auto recv_exception = packet_stream.get_recv_exception();
+        const auto expr_1 = packet_stream.get_recv_exception() == nullptr;
+        const auto expr_2 = packet_stream.is_running();
 
-        if (recv_exception != nullptr)
+        if (!expr_1 || !expr_2)
         {
             break;
         }

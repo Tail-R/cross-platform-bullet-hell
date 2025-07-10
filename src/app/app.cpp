@@ -54,7 +54,14 @@ AppResult App::run() {
     auto wait_packet = [&](PayloadType payload_type, size_t timeout_msec, size_t max_attempts) -> bool {
         for (size_t attempt = 0; attempt < max_attempts; attempt++)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(timeout_msec));
+            // Check if the recv thread is alive
+            const auto expr_1 = packet_stream.get_recv_exception() == nullptr;
+            const auto expr_2 = packet_stream.is_running();
+
+            if (!expr_1 || !expr_2)
+            {
+                return false;
+            }
 
             std::optional<PacketPayload> payload_opt = packet_stream.poll_message();
 
@@ -65,6 +72,8 @@ AppResult App::run() {
                     return true;
                 }
             }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(timeout_msec));
         }
 
         return false;
