@@ -63,11 +63,11 @@ AppResult App::run() {
                 return false;
             }
 
-            std::optional<PacketPayload> payload_opt = packet_stream.poll_message();
+            std::optional<Packet> packet_opt = packet_stream.poll_packet();
 
-            if (payload_opt.has_value())
+            if (packet_opt.has_value())
             {
-                if (get_payload_type(payload_opt.value()) == payload_type)
+                if (packet_opt.value().header.payload_type == payload_type)
                 {
                     return true;
                 }

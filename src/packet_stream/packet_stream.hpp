@@ -24,8 +24,9 @@ public:
     void stop();
     bool is_running() const;
 
+    // Returns the latest frame
     std::optional<FrameSnapshot> poll_frame();
-    std::optional<PacketPayload> poll_message();
+    std::optional<Packet> poll_packet();
 
     bool send_packet(const Packet& packet);
 
@@ -53,8 +54,8 @@ private:
     std::deque<FrameSnapshot>       m_frame_queue;
 
     // Packet queue (General)
-    std::mutex                      m_message_mutex;
-    std::queue<PacketPayload>       m_message_queue;
+    std::mutex                      m_packet_mutex;
+    std::queue<Packet>              m_packet_queue;
 
     std::atomic<uint32_t>           m_send_sequence;
 

@@ -87,16 +87,16 @@ std::optional<FrameSnapshot> PacketStreamClient::poll_frame() {
     return frame;
 }
 
-std::optional<PacketPayload> PacketStreamClient::poll_message() {
-    std::lock_guard<std::mutex> lock(m_message_mutex);
+std::optional<Packet> PacketStreamClient::poll_packet() {
+    std::lock_guard<std::mutex> lock(m_packet_mutex);
 
-    if (!m_running || m_message_queue.empty())
+    if (!m_running || m_packet_queue.empty())
     {
         return std::nullopt;
     }
 
-    const auto message = std::move(m_message_queue.front());
-    m_message_queue.pop();
+    const auto message = std::move(m_packet_queue.front());
+    m_packet_queue.pop();
 
     return message;
 }
@@ -124,11 +124,11 @@ bool PacketStreamClient::send_packet(const Packet& packet) {
 
     switch (packet.header.payload_type)
     {
-        case PayloadType::ClientHello:              { payload_bytes = serialize_client_hello(std::get<ClientHello>(packet.payload)); break; }
-        case PayloadType::ClientGoodbye:            { payload_bytes = serialize_client_goodbye(std::get<ClientGoodbye>(packet.payload)); break; }
-        case PayloadType::ClientGameRequest:        { payload_bytes = serialize_client_game_request(std::get<ClientGameRequest>(packet.payload)); break; }
+        case PayloadType::ClientHello:              { payload_bytes = serialize_client_hello(std::get<ClientHello>(packet.payload));                        break; }
+        case PayloadType::ClientGoodbye:            { payload_bytes = serialize_client_goodbye(std::get<ClientGoodbye>(packet.payload));                    break; }
+        case PayloadType::ClientGameRequest:        { payload_bytes = serialize_client_game_request(std::get<ClientGameRequest>(packet.payload));           break; }
         case PayloadType::ClientReconnectRequest:   { payload_bytes = serialize_client_reconnect_request(std::get<ClientReconnectRequest>(packet.payload)); break; }
-        case PayloadType::ClientInput:              { payload_bytes = serialize_client_input(std::get<ClientInput>(packet.payload)); break; }
+        case PayloadType::ClientInput:              { payload_bytes = serialize_client_input(std::get<ClientInput>(packet.payload));                        break; }
         default:
         {
             std::cerr << "[PacketStreamClient] Invalid PayloadType: "
@@ -225,17 +225,23 @@ void PacketStreamClient::process_buffer() {
 
         switch (payload_type)
         {
-            case PayloadType::ServerAccept:             { if (auto opt = deserialize_server_accept(payload))                message = *opt; break; }
-            case PayloadType::ServerGoodbye:            { if (auto opt = deserialize_server_goodbye(payload))               message = *opt; break; }
-            case PayloadType::ServerGameResponse:       { if (auto opt = deserialize_server_game_response(payload))         message = *opt; break; }
-            case PayloadType::ServerReconnectResponse:  { if (auto opt = deserialize_server_reconnect_response(payload))    message = *opt; break; }
+            case PayloadType::ServerAccept:             { message = deserialize_server_accept(payload);             break; }
+            case PayloadType::ServerGoodbye:            { message = deserialize_server_goodbye(payload);            break; }
+            case PayloadType::ServerGameResponse:       { message = deserialize_server_game_response(payload);      break; }
+            case PayloadType::ServerReconnectResponse:  { message = deserialize_server_reconnect_response(payload); break; }
             case PayloadType::FrameSnapshot:
             {
-                if (auto opt = deserialize_frame(payload))
+                const auto frame_opt = deserialize_frame(payload);
+
+                // or frame_opt if you want to use the frame via PacketStreamClient::poll_message
+                message = std::nullopt;
+
+                if (frame_opt.has_value())
                 {
                     std::lock_guard<std::mutex> lock(m_frame_mutex);
-                    m_frame_queue.push_back(*opt);
+                    m_frame_queue.push_back(frame_opt.value());
                 }
+
                 break;
             }
             default:
@@ -243,14 +249,20 @@ void PacketStreamClient::process_buffer() {
                 std::cerr << "[PacketStreamClient] Invalid payload type: " 
                           << static_cast<uint32_t>(payload_type) << "\n"
                           << "[PacketStreamClient] Failed to process the buffer" << "\n";
+
                 break;
             }
         }
 
         if (message.has_value())
         {
-            std::lock_guard<std::mutex> lock(m_message_mutex);
-            m_message_queue.push(*message);
+            const auto packet = Packet {
+                header,
+                message.value()
+            };
+
+            std::lock_guard<std::mutex> lock(m_packet_mutex);
+            m_packet_queue.push(packet);
         }
 
         offset += PACKET_HEADER_SIZE + header.payload_size;
@@ -345,10 +357,10 @@ bool PacketStreamServer::send_packet(const Packet& packet) {
 
     switch (packet.header.payload_type)
     {
-        case PayloadType::ServerAccept:             { payload_bytes = serialize_server_accept(std::get<ServerAccept>(packet.payload)); break; }
-        case PayloadType::ServerGoodbye:            { payload_bytes = serialize_server_goodbye(std::get<ServerGoodbye>(packet.payload)); break; }
-        case PayloadType::ServerGameResponse:       { payload_bytes = serialize_server_game_response(std::get<ServerGameResponse>(packet.payload)); break; }
-        case PayloadType::ServerReconnectResponse:  { payload_bytes = serialize_server_reconnect_response(std::get<ServerReconnectResponse>(packet.payload)); break; }
+        case PayloadType::ServerAccept:             { payload_bytes = serialize_server_accept(std::get<ServerAccept>(packet.payload));                          break; }
+        case PayloadType::ServerGoodbye:            { payload_bytes = serialize_server_goodbye(std::get<ServerGoodbye>(packet.payload));                        break; }
+        case PayloadType::ServerGameResponse:       { payload_bytes = serialize_server_game_response(std::get<ServerGameResponse>(packet.payload));             break; }
+        case PayloadType::ServerReconnectResponse:  { payload_bytes = serialize_server_reconnect_response(std::get<ServerReconnectResponse>(packet.payload));   break; }
         case PayloadType::FrameSnapshot:
         {
             auto frame_bytes_opt = serialize_frame(std::get<FrameSnapshot>(packet.payload));
@@ -470,11 +482,11 @@ void PacketStreamServer::process_buffer() {
 
         switch (payload_type)
         {
-            case PayloadType::ClientHello:              { if (auto opt = deserialize_client_hello(payload)) message = *opt; break; }
-            case PayloadType::ClientGoodbye:            { if (auto opt = deserialize_client_goodbye(payload)) message = *opt; break; }
-            case PayloadType::ClientGameRequest:        { if (auto opt = deserialize_client_game_request(payload)) message = *opt; break; }
-            case PayloadType::ClientReconnectRequest:   { if (auto opt = deserialize_client_reconnect_request(payload)) message = *opt; break; }
-            case PayloadType::ClientInput:              { if (auto opt = deserialize_client_input(payload)) message = *opt; break; }
+            case PayloadType::ClientHello:              { message = deserialize_client_hello(payload);              break; }
+            case PayloadType::ClientGoodbye:            { message = deserialize_client_goodbye(payload);            break; }
+            case PayloadType::ClientGameRequest:        { message = deserialize_client_game_request(payload);       break; }
+            case PayloadType::ClientReconnectRequest:   { message = deserialize_client_reconnect_request(payload);  break; }
+            case PayloadType::ClientInput:              { message = deserialize_client_input(payload);              break; }
             default:
             {
                 std::cerr << "[PacketStreamServer] ERROR: Invalid payload type: " 
@@ -486,12 +498,13 @@ void PacketStreamServer::process_buffer() {
 
         if (message.has_value())
         {
-            Packet pkt;
-            pkt.header = header;
-            pkt.payload = *message;
+            const auto packet = Packet {
+                header,
+                message.value()
+            };
 
             std::lock_guard<std::mutex> lock(m_packet_mutex);
-            m_packet_queue.push(std::move(pkt));
+            m_packet_queue.push(std::move(packet));
         }
 
         offset += PACKET_HEADER_SIZE + header.payload_size;
