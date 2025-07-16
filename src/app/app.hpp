@@ -68,11 +68,11 @@ public:
     AppResult run();
 
 private:
-    SDL_Window*     m_sdl_window        = nullptr;
-    SDL_GLContext   m_sdl_gl_context    = nullptr;
+    SDL_Window*     m_sdl_window;
+    SDL_GLContext   m_sdl_gl_context;
 
-    bool            m_sdl_initialized       = false;
-    bool            m_sdl_gl_initialized    = false;
+    bool            m_sdl_initialized;
+    bool            m_sdl_gl_initialized;
 
     bool            init_sdl(const SDLConfig& app_config);
     bool            init_gl(const GLConfig& gl_config);

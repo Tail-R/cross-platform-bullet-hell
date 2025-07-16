@@ -5,13 +5,7 @@
 #include "../config_constants.hpp"
 #include "../logger/logger.hpp"
 #include "../input_manager/input_manager.hpp"
-
-#include "../assets_factory/mesh_factory.hpp"
-#include "../assets_factory/shader_factory.hpp"
-#include "../assets_factory/texture_factory.hpp"
-
 #include "../packet_stream/packet_stream.hpp"
-
 #include "../renderer/renderer.hpp"
 #include "../renderable_resolver/renderable_resolver.hpp"
 
@@ -59,10 +53,7 @@ AppResult App::run() {
         for (size_t attempt = 0; attempt < max_attempts; attempt++)
         {
             // Check if the recv thread is alive
-            const auto expr_1 = packet_stream.get_recv_exception() == nullptr;
-            const auto expr_2 = packet_stream.is_running();
-
-            if (!expr_1 || !expr_2)
+            if (packet_stream.get_recv_exception() != nullptr || !packet_stream.is_running())
             {
                 return false;
             }
