@@ -148,16 +148,15 @@ static_assert(sizeof(ItemSnapshot) == ITEM_SNAPSHOT_SIZE);
     Frame snapshot
 */
 struct FrameSnapshot {
-    uint32_t    client_id;
-    uint32_t    opponent_id;
-    uint32_t    timestamp;
-    uint32_t    score;
+    uint32_t        client_id;
+    uint32_t        opponent_id;
+    uint32_t        timestamp;
+    uint32_t        score;
 
-    uint8_t     mode;
-    uint8_t     difficulty;
-    uint8_t     state;
-
-    uint8_t     reserved_01;    // Reserved area
+    GameMode        mode;
+    GameVariant     variant;
+    GameDifficulty  difficulty;
+    GameState       state;
 
     /***** 16 bytes total *****/
 

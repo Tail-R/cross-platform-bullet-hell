@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <unordered_map>
+#include <sol/sol.hpp>
 #include "../mesh/mesh.hpp"
 
 class MeshFactory {
@@ -11,7 +12,7 @@ public:
     ~MeshFactory();
 
     std::shared_ptr<Mesh> get_mesh(const std::string& mesh_path);
-    void load_mesh(const std::string& mesh_path);
+    void load_mesh(sol::state& lua, const std::string& mesh_path);
 
     void clear_cache();
 

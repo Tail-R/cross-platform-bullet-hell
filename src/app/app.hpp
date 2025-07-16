@@ -13,7 +13,7 @@ struct SDLConfig {
     int             window_width                = 384;
     int             window_height               = 448;
     int             window_flags                = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
-    int             window_fps                  = 60;
+    // int             window_fps                  = 60;
 };
 
 enum class BlendMode {
@@ -33,15 +33,16 @@ struct GLConfig {
     BlendMode   blend_mode  = BlendMode::Alpha;
     VSyncMode   vsync_mode  = VSyncMode::Enable;
 
-    // Optional for custom blending
+    // Used only if blend_mode == BlendMode::Custom
     GLenum      custom_blend_src = GL_SRC_ALPHA;
     GLenum      custom_blend_dst = GL_ONE_MINUS_SRC_ALPHA;
 };
 
 enum class AppExitStatus : int {
-    Success         = 0,
-    SocketError     = 1,
-    ServerTimeout   = 2
+    Success             = 0,
+    SocketError         = 1,
+    ServerTimeout       = 2,
+    ResourceLoadError   = 3
 };
 
 struct AppResult {
@@ -67,11 +68,11 @@ public:
     AppResult run();
 
 private:
-    SDL_Window*     m_sdl_window;
-    SDL_GLContext   m_sdl_gl_context;
+    SDL_Window*     m_sdl_window        = nullptr;
+    SDL_GLContext   m_sdl_gl_context    = nullptr;
 
-    bool            m_sdl_initialized;
-    bool            m_sdl_gl_initialized;
+    bool            m_sdl_initialized       = false;
+    bool            m_sdl_gl_initialized    = false;
 
     bool            init_sdl(const SDLConfig& app_config);
     bool            init_gl(const GLConfig& gl_config);

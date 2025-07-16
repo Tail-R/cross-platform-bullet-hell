@@ -1,14 +1,18 @@
+game_vars = require("game_vars")
+
 return {
-    name = "zunmon",
+    type = game_vars.types.player,
+    name = game_vars.player_names.unknown,
 
     dimensions = {
-        width  = 32,
-        height = 48,
-        scale  = 1.0
+        mesh    = "rect_2d.lua",
+        width   = 32,
+        height  = 48,
+        scale   = 1.0
     },
 
     texture_atlas = {
-        image = "assets/texture/zunmon_3002.png",
+        image = "zunmon_3002.png",
 
         regions = {
             normal = {
@@ -22,7 +26,7 @@ return {
 
     animations = {
         idle = {
-            shader = "assets/shader/green_aura.lua",
+            shader = "green_aura.lua",
             region = "normal",
             duration = 2.0,
             loop = false

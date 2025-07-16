@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include "game_enums.hpp"
+#include "../frame.hpp"
 
 constexpr size_t MAX_MESSAGE_SIZE = 256;
 
@@ -9,12 +10,13 @@ constexpr size_t MAX_MESSAGE_SIZE = 256;
     Game request
 */
 struct ClientGameRequest {
-    PlayMode        play_mode;
+    GameMode        play_mode;
     GameVariant     game_variant;
     GameDifficulty  game_difficulty;
+    uint8_t         reserved_1;         // Reserved area
 };
 
-constexpr size_t CLIENT_GAME_REQUEST_SIZE = 12;
+constexpr size_t CLIENT_GAME_REQUEST_SIZE = 4;
 static_assert(sizeof(ClientGameRequest) == CLIENT_GAME_REQUEST_SIZE);
 
 /*

@@ -76,11 +76,42 @@ namespace {
             std::nullopt
         };
     }
+
+    UniformType glenum_to_uniform_type(GLenum type) {
+        switch (type)
+        {
+            case GL_BOOL:       return UniformType::Bool;
+            case GL_INT:        return UniformType::Int;
+            case GL_FLOAT:      return UniformType::Float;
+            case GL_FLOAT_VEC2: return UniformType::Vec2;
+            case GL_FLOAT_VEC3: return UniformType::Vec3;
+            case GL_FLOAT_VEC4: return UniformType::Vec4;
+            case GL_FLOAT_MAT4: return UniformType::Mat4;
+            default:            return UniformType::Unknown;
+        }
+    }
+}
+
+UniformType get_uniform_type(const UniformValue& value) {
+    return std::visit([](auto&& arg) -> UniformType {
+        using T = std::decay_t<decltype(arg)>;
+
+        if      constexpr (std::is_same_v<T, bool>)         return UniformType::Bool;
+        else if constexpr (std::is_same_v<T, int>)          return UniformType::Int;
+        else if constexpr (std::is_same_v<T, float>)        return UniformType::Float;
+        else if constexpr (std::is_same_v<T, glm::vec2>)    return UniformType::Vec2;
+        else if constexpr (std::is_same_v<T, glm::vec3>)    return UniformType::Vec3;
+        else if constexpr (std::is_same_v<T, glm::vec4>)    return UniformType::Vec4;
+        else if constexpr (std::is_same_v<T, glm::mat4>)    return UniformType::Mat4;
+        else                                                return UniformType::Unknown;
+    }, value);
 }
 
 Shader::Shader()
     : m_program_id(0)
-{}
+{
+    m_uniform_location_cache.clear();
+}
 
 Shader::~Shader() {
     delete_program();
@@ -91,6 +122,7 @@ void Shader::load_from_file(
     std::string_view fragment_shader_path
 ) {
     delete_program();
+    m_uniform_location_cache.clear();
 
     m_program_id = glCreateProgram();
 
@@ -108,19 +140,19 @@ void Shader::load_from_file(
     // Fallback to default shader source if compilation fails
     if (!vertex_shader_opt.has_value())
     {
-        std::cerr << "[Shader] Falling back to default vertex shader" << "\n";
+        std::cerr << "[Shader] WARNING: Falling back to default vertex shader" << "\n";
         vertex_shader_opt = try_compile_shader(GL_VERTEX_SHADER, default_vertex_shader);
     }
 
     if (!fragment_shader_opt.has_value())
     {
-        std::cerr << "[Shader] Falling back to default fragment shader" << "\n";
+        std::cerr << "[Shader] WARNING: Falling back to default fragment shader" << "\n";
         fragment_shader_opt = try_compile_shader(GL_FRAGMENT_SHADER, default_fragment_shader);
     }
 
     if (!vertex_shader_opt || !fragment_shader_opt)
     {
-        throw std::runtime_error("Error while compiling GLSL shader");
+        throw std::runtime_error("[Shader] CRITICAL: Error while compiling GLSL shader");
     }
 
     // Unwrapping
@@ -139,25 +171,32 @@ void Shader::load_from_file(
     {
         if (link_status.info_log.has_value())
         {
-            std::cerr << "[Shader] " << link_status.info_log.value() << "\n";
+            std::cerr << "[Shader] ERROR: " << link_status.info_log.value() << "\n";
         }
 
-        throw std::runtime_error("[Shader] Error while linking GLSL shaders");
+        throw std::runtime_error("[Shader] CRITICAL: Error while linking GLSL shaders");
     }
 
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
+
+    // Cache uniforms
+    for (auto uni_ident : get_uniform_identities())
+    {
+        m_uniform_location_cache[uni_ident.name] = uni_ident.location;
+    }
 }
 
 void Shader::load_default_shader() {
     delete_program();
+    m_uniform_location_cache.clear();
 
     auto vertex_shader_opt = try_compile_shader(GL_VERTEX_SHADER, default_vertex_shader);
     auto fragment_shader_opt = try_compile_shader(GL_FRAGMENT_SHADER, default_fragment_shader);
 
     if (!vertex_shader_opt || !fragment_shader_opt)
     {
-        throw std::runtime_error("[Shader] Error while compiling GLSL shader");
+        throw std::runtime_error("[Shader] CRITICAL: Error while compiling GLSL shader");
     }
 
     // Unwrapping
@@ -177,10 +216,10 @@ void Shader::load_default_shader() {
     {
         if (link_status.info_log.has_value())
         {
-            std::cerr << "[Shader] " << link_status.info_log.value() << "\n";
+            std::cerr << "[Shader] ERROR: " << link_status.info_log.value() << "\n";
         }
 
-        throw std::runtime_error("[Shader] Error while linking GLSL shaders");
+        throw std::runtime_error("[Shader] CRITICAL: Error while linking GLSL shaders");
     }
 
     glDeleteShader(vertex_shader);
@@ -191,62 +230,192 @@ void Shader::use() const {
     glUseProgram(m_program_id);
 }
 
-GLuint Shader::id() const {
-    return m_program_id;
+void Shader::set_uniform(const std::string& name, bool value) const {
+    auto location_opt = name_to_location(name);
+
+    if (location_opt.has_value())
+    {
+        glUniform1i(location_opt.value(), static_cast<GLboolean>(value));
+
+        return;
+    }
+    
+    std::cerr << "[Shader] WARNING: The shader doesn't have an uniform: " << name << "\n";
 }
 
-void Shader::set_bool(std::string_view name, bool value) const {
-    glUniform1i(
-        glGetUniformLocation(m_program_id, name.data()),
-        static_cast<GLboolean>(value)
-    );
+void Shader::set_uniform(const std::string& name, int value) const {
+    auto location_opt = name_to_location(name);
+
+    if (location_opt.has_value())
+    {
+        glUniform1i(location_opt.value(), static_cast<GLint>(value));
+
+        return;
+    }
+    
+    std::cerr << "[Shader] WARNING: The shader doesn't have an uniform: " << name << "\n";
 }
 
-void Shader::set_int(std::string_view name, int value) const {
-    glUniform1i(
-        glGetUniformLocation(m_program_id, name.data()),
-        static_cast<GLint>(value)
-    );
+void Shader::set_uniform(const std::string& name, float value) const {
+    auto location_opt = name_to_location(name);
+
+    if (location_opt.has_value())
+    {
+        glUniform1f(location_opt.value(), static_cast<GLfloat>(value));
+
+        return;
+    }
+    
+    std::cerr << "[Shader] WARNING: The shader doesn't have an uniform: " << name << "\n";
 }
 
-void Shader::set_float(std::string_view name, float value) const {
-    glUniform1f(
-        glGetUniformLocation(m_program_id, name.data()),
-        static_cast<GLfloat>(value)
-    );
+void Shader::set_uniform(const std::string& name, const glm::vec2& vec) const {
+    auto location_opt = name_to_location(name);
+
+    if (location_opt.has_value())
+    {
+        glUniform2fv(location_opt.value(), 1, &vec[0]);
+
+        return;
+    }
+    
+    std::cerr << "[Shader] WARNING: The shader doesn't have an uniform: " << name << "\n";
 }
 
-void Shader::set_vec2(std::string_view name, const glm::vec2& vec) const {
-    glUniform2fv(
-        glGetUniformLocation(m_program_id, name.data()),
-        1,
-        &vec[0]
-    );
+void Shader::set_uniform(const std::string& name, const glm::vec3& vec) const {
+    auto location_opt = name_to_location(name);
+
+    if (location_opt.has_value())
+    {
+        glUniform3fv(location_opt.value(), 1, &vec[0]);
+
+        return;
+    }
+    
+    std::cerr << "[Shader] WARNING: The shader doesn't have an uniform: " << name << "\n";
 }
 
-void Shader::set_vec3(std::string_view name, const glm::vec3& vec) const {
-    glUniform3fv(
-        glGetUniformLocation(m_program_id, name.data()),
-        1,
-        &vec[0]
-    );
+void Shader::set_uniform(const std::string& name, const glm::vec4& vec) const {
+    auto location_opt = name_to_location(name);
+
+    if (location_opt.has_value())
+    {
+        glUniform4fv(location_opt.value(), 1, &vec[0]);
+
+        return;
+    }
+    
+    std::cerr << "[Shader] WARNING: The shader doesn't have an uniform: " << name << "\n";
 }
 
-void Shader::set_vec4(std::string_view name, const glm::vec4& vec) const {
-    glUniform4fv(
-        glGetUniformLocation(m_program_id, name.data()),
-        1,
-        &vec[0]
-    );
+void Shader::set_uniform(const std::string& name, const glm::mat4& mat) const {
+    auto location_opt = name_to_location(name);
+
+    if (location_opt.has_value())
+    {
+        glUniformMatrix4fv(location_opt.value(), 1, GL_FALSE, &mat[0][0]);
+
+        return;
+    }
+    
+    std::cerr << "[Shader] WARNING: The shader doesn't have an uniform: " << name << "\n";
 }
 
-void Shader::set_mat4(std::string_view name, const glm::mat4& mat) const {
-    glUniformMatrix4fv(
-        glGetUniformLocation(m_program_id, name.data()),
-        1,
-        GL_FALSE,
-        &mat[0][0]
-    );
+std::vector<std::string> Shader::get_uniform_names() const {
+    std::vector<std::string> uniform_names{};
+    uniform_names.reserve(m_uniform_location_cache.size());
+
+    // Collect uniform names from the cache
+    for (auto uniform_pair : m_uniform_location_cache)
+        uniform_names.push_back(uniform_pair.first);
+
+    return uniform_names;
+}
+
+void Shader::set_uniform(const std::string& name, UniformValue value) const {
+    const auto uniform_type = get_uniform_type(value);
+
+    switch (uniform_type)
+    {
+        case UniformType::Bool:     { set_uniform(name, std::get<bool>(value));      break; }
+        case UniformType::Int:      { set_uniform(name, std::get<int>(value));       break; }
+        case UniformType::Float:    { set_uniform(name, std::get<float>(value));     break; }
+        case UniformType::Vec2:     { set_uniform(name, std::get<glm::vec2>(value)); break; }
+        case UniformType::Vec3:     { set_uniform(name, std::get<glm::vec3>(value)); break; }
+        case UniformType::Vec4:     { set_uniform(name, std::get<glm::vec4>(value)); break; }
+        case UniformType::Mat4:     { set_uniform(name, std::get<glm::mat4>(value)); break; }
+        default:
+        {
+            std::cerr << "[Shader] WARNING: Invalid uniform type" << "\n";
+        }
+    }
+}
+
+std::optional<GLint> Shader::name_to_location(const std::string& name) const {
+    auto it = m_uniform_location_cache.find(name);
+    auto end = m_uniform_location_cache.end();
+
+    return it != end ? std::make_optional(it->second) : std::nullopt;
+}
+
+std::vector<UniformIdentity> Shader::get_uniform_identities() {
+    GLint uniform_count = 0;
+    glGetProgramiv(m_program_id, GL_ACTIVE_UNIFORMS, &uniform_count);
+
+    GLint max_name_length = 0;
+    glGetProgramiv(m_program_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_name_length);
+
+    std::vector<UniformIdentity> shaders;
+    std::vector<GLchar> name_buf(max_name_length);
+
+    for (GLint i = 0; i < uniform_count; i++)
+    {
+        GLsizei length;
+        GLint   size;
+        GLenum  type;
+
+        glGetActiveUniform(m_program_id, i, max_name_length, &length, &size, &type, name_buf.data());
+
+        /*
+            Get uniform name
+        */
+        std::string uniform_name(name_buf.data(), length);
+
+        // Remove the last '[N]' of VecN and MatN 
+        if (uniform_name.size() >= 3 && uniform_name.compare(uniform_name.size() - 3, 3, "[0]") == 0)
+        {
+            uniform_name = uniform_name.substr(0, uniform_name.size() - 3);
+        }
+
+        /*
+            Get uniform type
+        */
+        auto uniform_type = glenum_to_uniform_type(type);
+
+        if (uniform_type == UniformType::Unknown)
+        {
+            continue;
+        }
+
+        /*
+            Get uniform location
+        */
+        GLint uniform_location = glGetUniformLocation(m_program_id, uniform_name.c_str());
+
+        if (uniform_location == -1) {
+            std::cerr << "[Shader] ERROR: Couldn't find the location of uniform: " << uniform_name << "\n";
+
+            continue;
+        }
+
+        shaders.push_back(UniformIdentity{
+            uniform_name,
+            uniform_type,
+            uniform_location
+        });
+    }
+
+    return shaders;
 }
 
 std::optional<std::string> Shader::try_load_shader_source(std::string_view shader_path) const {
@@ -255,7 +424,7 @@ std::optional<std::string> Shader::try_load_shader_source(std::string_view shade
 
     if (!file.is_open())
     {
-        std::cerr << "[Shader] Failed to load shader file: " << shader_path << "\n";
+        std::cerr << "[Shader] ERROR: Failed to load shader file: " << shader_path << "\n";
 
         return std::nullopt;
     }
@@ -281,11 +450,11 @@ std::optional<GLuint> Shader::try_compile_shader(GLenum shader_type, std::string
             shader_type == GL_VERTEX_SHADER ? "vertex" : 
             shader_type == GL_FRAGMENT_SHADER ? "fragment" : "unknown";
 
-        std::cerr << "[Shader] Failed to compile " << shader_type_str << " shader: ";
+        std::cerr << "[Shader] ERROR: Failed to compile " << shader_type_str << " shader: ";
 
         if (compile_status.info_log.has_value())
         {
-            std::cerr << "[Shader] " << compile_status.info_log.value();
+            std::cerr << compile_status.info_log.value();
         }
 
         std::cerr << "\n";

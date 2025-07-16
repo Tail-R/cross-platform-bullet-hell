@@ -1,9 +1,32 @@
 #include <iostream>
-#include <sol/sol.hpp>
 #include "mesh_factory.hpp"
 
 MeshFactory::MeshFactory() = default;
 MeshFactory::~MeshFactory() = default;
+
+namespace {
+    std::optional<sol::table> load_lua_mesh(sol::state& lua, const std::string& path) {
+        try
+        {
+            sol::object result = lua.script_file(path);
+
+            if (result.is<sol::table>())
+            {
+                return result.as<sol::table>();
+            }
+            else
+            {
+                std::cerr << "[MeshFactory] ERROR: " << path << " did not return a table\n";
+            }
+        }
+        catch (const sol::error& e)
+        {
+            std::cerr << "[MeshFactory] ERROR: Lua error while loading " << path << ": " << e.what() << "\n";
+        }
+
+        return std::nullopt;
+    }
+}
 
 std::shared_ptr<Mesh> MeshFactory::get_mesh(const std::string& mesh_path) {
     auto it = m_mesh_cache.find(mesh_path);
@@ -13,62 +36,49 @@ std::shared_ptr<Mesh> MeshFactory::get_mesh(const std::string& mesh_path) {
         return it->second;
     }
 
-    std::cerr << "[Mesh Factory] Mesh not preloaded: " << mesh_path << "\n";
+    std::cerr << "[Mesh Factory] WARNING: Mesh not preloaded: " << mesh_path << "\n";
 
     // To-Do: Fallback in here
     
     return nullptr;
 }
 
-void MeshFactory::load_mesh(const std::string& mesh_path) {
-    sol::state lua;
-    lua.open_libraries(sol::lib::base);
+void MeshFactory::load_mesh(sol::state& lua, const std::string& mesh_path) {
+    auto mesh_tbl_opt = load_lua_mesh(lua, mesh_path);
 
-    // Try to load Lua file
-    sol::table load_result;
-
-    try {
-        load_result = lua.script_file(mesh_path);
-    } catch (const sol::error& e) {
-        std::cerr << "[MeshFactory] Lua error while loading " << mesh_path
-                    << ": " << e.what() << "\n";
-        
-        // To-Do: Fallback in here
-
+    if (!mesh_tbl_opt.has_value())
+    {
         return;
     }
 
-    // Check the value type
-    sol::table mesh_lua;
-
-    if (load_result.is<sol::table>())
-    {
-        mesh_lua = load_result.as<sol::table>();
-    }
-    else
-    {
-        std::cerr << "[MeshFactory] " << mesh_path << " did not return a table" << "\n";
-
-        // To-Do: Fallback in here
-
-        return;
-    }
+    const sol::table& mesh_lua = mesh_tbl_opt.value();
 
     // Attributes
     std::vector<VertexAttribute> attributes;
-    sol::table attr_table = mesh_lua["attributes"];
 
-    for (auto&& kv : attr_table)
+    if (mesh_lua["attributes"].valid())
     {
-        sol::table attr = kv.second.as<sol::table>();
+        sol::table attr_table = mesh_lua["attributes"];
 
-        std::string name = attr.get_or("name", std::string{});
-        size_t size = attr.get_or("size", 0);
+        for (auto&& kv : attr_table)
+        {
+            sol::table attr = kv.second.as<sol::table>();
 
-        attributes.push_back({
-            name,
-            size
-        });
+            std::string name = attr.get_or("name", std::string{});
+            size_t size = attr.get_or("size", 0);
+
+            attributes.push_back({
+                name,
+                size
+            });
+        }
+    }
+    else
+    {
+        std::cerr << "[MeshFactory] WARNING: Missing 'attributes' field in: " << mesh_path << "\n";
+
+        // To-Do: Fallback in here
+        return;
     }
 
     // Vertices
@@ -80,9 +90,10 @@ void MeshFactory::load_mesh(const std::string& mesh_path) {
     }
     else
     {
-        std::cerr << "[MeshFactory] Missing 'vertices' field in: " << mesh_path << "\n";
+        std::cerr << "[MeshFactory] WARNING: Missing 'vertices' field in: " << mesh_path << "\n";
 
         // To-Do: Fallback in here
+        return;
     }
 
     // Indices
@@ -94,9 +105,10 @@ void MeshFactory::load_mesh(const std::string& mesh_path) {
     }
     else
     {
-        std::cerr << "[MeshFactory] Missing 'indices' field in: " << mesh_path << "\n";
+        std::cerr << "[MeshFactory] WARNING: Missing 'indices' field in: " << mesh_path << "\n";
 
         // To-Do: Fallback in here
+        return;
     }
 
     auto mesh_ptr = std::make_shared<Mesh>(

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <sol/sol.hpp>
 #include "app.hpp"
 #include "../config_constants.hpp"
 #include "../logger/logger.hpp"
@@ -10,6 +11,9 @@
 #include "../assets_factory/texture_factory.hpp"
 
 #include "../packet_stream/packet_stream.hpp"
+
+#include "../renderer/renderer.hpp"
+#include "../renderable_resolver/renderable_resolver.hpp"
 
 App::App()
     : m_sdl_window(nullptr)
@@ -93,44 +97,49 @@ AppResult App::run() {
         };
     }
 
-    // Send game request
-    packet_stream.send_packet(make_packet<ClientGameRequest>({}));
-    async_log(LogLevel::Debug, "Client game request has been sent");
- 
-    // Factories
-    auto mesh_factory = MeshFactory();
-    auto shader_factory = ShaderFactory();
-    auto texture_factory = TextureFactory();
+    /*
+        Config lua state
+    */
+    sol::state lua;
+    lua.open_libraries(
+        sol::lib::base,
+        sol::lib::package,
+        sol::lib::debug
+    );
 
-    // Player assets
-    const auto p_mesh_path      = std::string(assets_constants::MESH_DIR)       + "/square.lua";
-    const auto p_shader_path    = std::string(assets_constants::SHADER_DIR)     + "/green_aura.lua";
-    const auto p_texture_path   = std::string(assets_constants::TEXTURE_DIR)    + "/zunmon_3002.png";
+    // Adding asset directories to the package path
+    std::string lua_package_path = std::string(assets_constants::REGISTRY_DIR)  + "/?.lua;"
+                                 + std::string(assets_constants::SPRITE_DIR)    + "/?.lua;"
+                                 + std::string(assets_constants::MESH_DIR)      + "/?.lua;"
+                                 + std::string(assets_constants::SHADER_DIR)    + "/?.lua;"
+                                 + std::string(assets_constants::TEXTURE_DIR)   + "/?.lua;";
 
-    // Background assets
-    const auto bg_mesh_path     = std::string(assets_constants::MESH_DIR)       + "/full_size.lua";
-    const auto bg_shader_path   = std::string(assets_constants::SHADER_DIR)     + "/basic.lua";
-    const auto bg_texture_path  = std::string(assets_constants::TEXTURE_DIR)    + "/background109.png"; 
+    std::string lua_script = "package.path = package.path .. \";" + lua_package_path + "\"";
+    lua.script(lua_script);
 
-    // Load player assets
-    mesh_factory.load_mesh(p_mesh_path);
-    shader_factory.load_shader(p_shader_path);
-    texture_factory.load_texture(p_texture_path);
+    /*
+        Renderable resolver
+    */
+    auto renderer = Renderer{};
+    auto resolver = RenderableResolver{};
+    auto renderable = std::vector<RenderableInstance>{};
 
-    // Load background assets
-    mesh_factory.load_mesh(bg_mesh_path);
-    shader_factory.load_shader(bg_shader_path);
-    texture_factory.load_texture(bg_texture_path);
+    auto registry_path = std::string(assets_constants::REGISTRY_DIR) + "/game.lua";
+    
+    if (!resolver.load_sprites(lua, registry_path))
+    {
+        async_log(LogLevel::Error, "[App] Failed to road sprites from registry");
+
+        return AppResult {
+            AppExitStatus::ResourceLoadError
+        };
+    }
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-    bool quit = false;
-    float x_offset = 0.0;
-    float y_offset = 0.0;
-    float speed = 2.0f;
-    Uint64 now = SDL_GetPerformanceCounter();
-    Uint64 last = 0;
-    float total_time = 0.0;
+    // Send game request
+    packet_stream.send_packet(make_packet<ClientGameRequest>({}));
+    async_log(LogLevel::Debug, "Client game request has been sent");
 
     // Wait for server game response
     if (!wait_packet(PayloadType::ServerGameResponse, 1000, 10))
@@ -142,13 +151,10 @@ AppResult App::run() {
         };
     }
 
-    while (!quit)
-    {
-        last = now;
-        now = SDL_GetPerformanceCounter();
-        float delta_time = (now - last) / (float)SDL_GetPerformanceFrequency();
-        total_time += delta_time;
+    bool render_quit = false;
 
+    while (!render_quit)
+    {
         glClear(GL_COLOR_BUFFER_BIT);
 
         input_manager.collect_input_events();
@@ -166,7 +172,7 @@ AppResult App::run() {
             async_log(LogLevel::Debug, "Quit has been pressed");
             async_log(LogLevel::Debug, "Exiting the draw loop");
 
-            quit = true;
+            render_quit = true;
         } 
 
         // Send client input
@@ -189,35 +195,11 @@ AppResult App::run() {
 
         if (frame_opt.has_value())
         {
-            x_offset = frame_opt.value().player_vector[0].pos.x;
-            y_offset = frame_opt.value().player_vector[0].pos.y;
+            renderable = resolver.resolve(frame_opt.value());
         }
 
-        // Draw background
-        auto mesh = mesh_factory.get_mesh(bg_mesh_path);
-        auto shader = shader_factory.get_shader(bg_shader_path);
-        auto texture = texture_factory.get_texture(bg_texture_path);
-
-        shader->use();
-        shader->set_float("time", total_time);
-        shader->set_vec2("offset", glm::vec2(0.0f, 0.0f));
-
-        texture->bind();
-        mesh->bind();
-        mesh->draw();
-
-        // Draw player
-        mesh = mesh_factory.get_mesh(p_mesh_path);
-        shader = shader_factory.get_shader(p_shader_path);
-        texture = texture_factory.get_texture(p_texture_path);
-
-        shader->use();
-        shader->set_float("time", total_time);
-        shader->set_vec2("offset", glm::vec2(x_offset, y_offset));
-
-        texture->bind();
-        mesh->bind();
-        mesh->draw();
+        // Draw and swap buffer
+        renderer.draw(renderable);
 
         SDL_GL_SwapWindow(m_sdl_window);
     }

@@ -14,7 +14,7 @@ std::shared_ptr<Texture2D> TextureFactory::get_texture(
         return it->second;
     }
 
-    std::cerr << "[TextureFactory] Texture not preloaded " << texture_path << "\n";
+    std::cerr << "[TextureFactory] WARNING: Texture not preloaded " << texture_path << "\n";
 
     // Fallback Texture created
     auto default_texture = std::make_shared<Texture2D>();

@@ -33,7 +33,6 @@ set(SRC_FILES
     ${SRC_DIR}/packet_serializer/greeting_serializer.cpp
     ${SRC_DIR}/packet_serializer/game_serializer.cpp
     ${SRC_DIR}/packet_serializer/input_serializer.cpp
-    ${SRC_DIR}/socket/socket.cpp
     ${SRC_DIR}/packet_stream/packet_stream.cpp
     ${SRC_DIR}/game_server/game_server.cpp
 
@@ -52,8 +51,10 @@ set(SRC_FILES
     ${SRC_DIR}/assets_factory/mesh_factory.cpp
     ${SRC_DIR}/assets_factory/shader_factory.cpp
     ${SRC_DIR}/assets_factory/texture_factory.cpp
+    ${SRC_DIR}/sprite/sprite_loader.cpp
 
-    # Utilities
+    # Misc
+    ${SRC_DIR}/socket/socket.cpp
     ${SRC_DIR}/logger/logger.cpp
 
     # Glad

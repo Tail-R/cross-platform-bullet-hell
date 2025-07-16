@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <unordered_map>
+#include <sol/sol.hpp>
 #include "../shader/shader.hpp"
 
 class ShaderFactory {
@@ -11,7 +12,7 @@ public:
     ~ShaderFactory();
 
     std::shared_ptr<Shader> get_shader(const std::string& shader_path);
-    void load_shader(const std::string& shader_path);
+    void load_shader(sol::state& lua, const std::string& shader_path);
 
     void clear_cache();
 

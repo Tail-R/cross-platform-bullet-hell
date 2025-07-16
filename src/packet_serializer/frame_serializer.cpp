@@ -168,9 +168,10 @@ std::optional<FrameSnapshot> deserialize_frame(const std::vector<std::byte>& byt
     bytes_offset = copy_bytes_to_t(&frame.timestamp,    bytes_offset);
     bytes_offset = copy_bytes_to_t(&frame.score,        bytes_offset);
     bytes_offset = copy_bytes_to_t(&frame.mode,         bytes_offset);
+    bytes_offset = copy_bytes_to_t(&frame.variant,      bytes_offset);
     bytes_offset = copy_bytes_to_t(&frame.difficulty,   bytes_offset);
     bytes_offset = copy_bytes_to_t(&frame.state,        bytes_offset);
-    bytes_offset = copy_bytes_to_t(&frame.reserved_01,  bytes_offset);
+
     // Copy the stage object
     bytes_offset = copy_bytes_to_t(&frame.stage, bytes_offset);
 

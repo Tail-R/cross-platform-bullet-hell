@@ -3,6 +3,35 @@
 #include <cstdint>
 
 /*
+    Play mode
+*/
+enum class GameMode : uint8_t {
+    Default,
+    Single,
+    Match,
+    Agent,
+    Replay
+};
+
+/*
+    Game variant
+*/
+enum class GameVariant : uint8_t {
+    Default
+};
+
+/*
+    Game difficulty
+*/
+enum class GameDifficulty : uint8_t {
+    Default,
+    Easy,
+    Normal,
+    Hard,
+    Lunatic
+};
+
+/*
     Game state
 */
 enum class GameState : uint8_t {
@@ -16,6 +45,18 @@ enum class GameState : uint8_t {
     Reserved_3  = 1 << 6,   // Reserved bit
     Reserved_4  = 1 << 7,   // Reserved bit
 };
+
+inline GameState operator|(GameState lhs, GameState rhs) {
+    return static_cast<GameState>(
+        static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs)
+    );
+}
+
+inline GameState operator&(GameState lhs, GameState rhs) {
+    return static_cast<GameState>(
+        static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs)
+    );
+}
 
 /*
     Stage state
@@ -31,6 +72,18 @@ enum class StageState : uint8_t {
     Reserved_4  = 1 << 6,   // Reserved bit
     Reserved_5  = 1 << 7,   // Reserved bit
 };
+
+inline StageState operator|(StageState lhs, StageState rhs) {
+    return static_cast<StageState>(
+        static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs)
+    );
+}
+
+inline StageState operator&(StageState lhs, StageState rhs) {
+    return static_cast<StageState>(
+        static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs)
+    );
+}
 
 /*
     Player state
