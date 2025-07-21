@@ -26,13 +26,10 @@ public:
     Mesh(Mesh&& other) noexcept;
     Mesh& operator=(Mesh&& other) noexcept;
 
-    /*
-        Just making sure that these functions
-        does not touch the member variables
-    */
     void bind() const;
     void unbind() const;
     void draw() const;
+    void set_texcoord(const std::vector<GLfloat>& texcoord);
 
 private:
     GLuint m_vao;
@@ -40,6 +37,10 @@ private:
     GLuint m_ebo;
 
     GLsizei m_index_count;
+    GLsizei m_vertex_size;
+    GLsizei m_texcoord_offset;
+    GLsizei m_texcoord_stride;
+    GLsizei m_texcoord_vertex_count;
 
     void cleanup();
     void swap_attributes(Mesh* other);

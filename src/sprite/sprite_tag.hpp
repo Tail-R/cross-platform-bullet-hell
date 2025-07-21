@@ -13,10 +13,12 @@ enum class SpriteType : uint8_t {
     Item
 };
 
+using SpriteName = uint8_t;
+
 // A tag for resource
 struct SpriteTag {
     SpriteType  type;
-    uint8_t     name;
+    SpriteName  name;
     uint32_t    id;
 
     /*

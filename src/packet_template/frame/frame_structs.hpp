@@ -29,8 +29,8 @@ static_assert(sizeof(Velocity2D) == 8);
 */
 struct StageSnapshot {
     uint8_t     id;
-    uint8_t     name;
-    uint8_t     state;
+    StageName   name;
+    StageState  state;
     uint8_t     next_stage;
 
     uint32_t    timestamp;
@@ -44,8 +44,8 @@ static_assert(sizeof(StageSnapshot) == STAGE_SNAPSHOT_SIZE);
 */
 struct PlayerSnapshot {
     uint8_t     id;
-    uint8_t     name;
-    uint8_t     state;
+    PlayerName  name;
+    PlayerState state;
     uint8_t     attack_pattern;
 
     Position2D  pos;
@@ -67,8 +67,8 @@ static_assert(sizeof(PlayerSnapshot) == PLAYER_SNAPSHOT_SIZE);
 */
 struct EnemySnapshot {
     uint8_t     id;
-    uint8_t     name;
-    uint8_t     state;
+    EnemyName   name;
+    EnemyState  state;
     uint8_t     attack_pattern;
     
     Position2D  pos;
@@ -86,8 +86,8 @@ static_assert(sizeof(EnemySnapshot) == ENEMY_SNAPSHOT_SIZE);
 */
 struct BossSnapshot {
     uint8_t     id;
-    uint8_t     name;
-    uint8_t     state;
+    BossName    name;
+    BossState   state;
     uint8_t     attack_pattern;
 
     Position2D  pos;
@@ -116,8 +116,8 @@ struct BulletSnapshot {
     float       angle;
     uint32_t    damage;
 
-    uint8_t     name;
-    uint8_t     state;
+    BulletName  name;
+    BulletState state;
     uint8_t     flight_pattern;
     uint8_t     owner;
 };
@@ -130,8 +130,8 @@ static_assert(sizeof(BulletSnapshot) == BULLET_SNAPSHOT_SIZE);
 */
 struct ItemSnapshot {
     uint8_t     id;
-    uint8_t     name;
-    uint8_t     state;
+    ItemName    name;
+    ItemState   state;
     uint8_t     flight_pattern;
 
     Position2D  pos;
@@ -184,4 +184,10 @@ struct FrameSnapshot {
     std::vector<ItemSnapshot>       item_vector;
 };
 
-constexpr size_t FRAME_SNAPSHOT_FIXED_HEADER_SIZE = 20;
+constexpr size_t FRAME_SNAPSHOT_FIXED_AREA_SIZE = sizeof(uint32_t) * 4
+                                                    + sizeof(GameMode)
+                                                    + sizeof(GameVariant)
+                                                    + sizeof(GameDifficulty)
+                                                    + sizeof(GameState);
+
+static_assert(FRAME_SNAPSHOT_FIXED_AREA_SIZE == 20);

@@ -95,6 +95,9 @@ AppResult App::run() {
     lua.open_libraries(
         sol::lib::base,
         sol::lib::package,
+        sol::lib::table,
+        sol::lib::string,
+        sol::lib::math,
         sol::lib::debug
     );
 
@@ -126,7 +129,7 @@ AppResult App::run() {
         };
     }
 
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     // Send game request
     packet_stream.send_packet(make_packet<ClientGameRequest>({}));
@@ -143,6 +146,7 @@ AppResult App::run() {
     }
 
     bool render_quit = false;
+    bool game_over = false;
 
     while (!render_quit)
     {
@@ -167,7 +171,7 @@ AppResult App::run() {
         } 
 
         // Send client input
-        if (game_input.arrows.pressed.any() || game_input.arrows.released.any())
+        if ((game_input.arrows.pressed.any() || game_input.arrows.released.any()) && !game_over)
         {
             ClientInput input;
             input.game_input = game_input;
@@ -187,6 +191,11 @@ AppResult App::run() {
         if (frame_opt.has_value())
         {
             renderable = resolver.resolve(frame_opt.value());
+
+            if ((frame_opt.value().state & GameState::GameOver) == GameState::GameOver)
+            {
+                game_over = true;
+            }
         }
 
         // Draw and swap buffer
@@ -194,6 +203,8 @@ AppResult App::run() {
 
         SDL_GL_SwapWindow(m_sdl_window);
     }
+
+    hide_window();
 
     // Wait for server goodbye
     if (!wait_packet(PayloadType::ServerGoodbye, 1000, 10))

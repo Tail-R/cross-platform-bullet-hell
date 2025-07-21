@@ -21,7 +21,7 @@ void Renderer::draw(const std::vector<RenderableInstance>& renderable_instances)
         texture->bind();
 
         // Set unifroms
-        for (auto& [name, value] : renderable.uniforms)
+        for (const auto& [name, value] : renderable.uniforms)
         {
             shader->set_uniform(name, value);
         }

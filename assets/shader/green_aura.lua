@@ -1,4 +1,4 @@
 return {
-    vertex = "vertex/player.glsl";
+    vertex = "vertex/aura.glsl";
     fragment = "fragment/green_aura.glsl";
 }

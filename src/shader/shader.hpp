@@ -73,8 +73,6 @@ private:
     std::optional<std::string> try_load_shader_source(std::string_view shader_path) const;
     std::optional<GLuint> try_compile_shader(GLenum shader_type, std::string_view shader_code) const;
 
-    GLuint m_program_id;
-
     // Retrieve uniform identities from the GPU
     std::vector<UniformIdentity> get_uniform_identities();
 
@@ -83,4 +81,6 @@ private:
     std::optional<GLint> name_to_location(const std::string& name) const;
 
     void delete_program();
+
+    GLuint m_program_id;
 };

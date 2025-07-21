@@ -33,7 +33,7 @@ std::optional<std::vector<std::byte>> serialize_frame(const FrameSnapshot& frame
     }
 
     // Calculate the total size of the packet (frame)
-    auto packet_size = FRAME_SNAPSHOT_FIXED_HEADER_SIZE +
+    auto packet_size = FRAME_SNAPSHOT_FIXED_AREA_SIZE +
         STAGE_SNAPSHOT_SIZE +
         sizeof(frame.player_count) +
         PLAYER_SNAPSHOT_SIZE * frame.player_count +
@@ -53,10 +53,10 @@ std::optional<std::vector<std::byte>> serialize_frame(const FrameSnapshot& frame
     memcpy(
         bytes_offset,
         &frame,
-        FRAME_SNAPSHOT_FIXED_HEADER_SIZE
+        FRAME_SNAPSHOT_FIXED_AREA_SIZE
     );
 
-    bytes_offset += FRAME_SNAPSHOT_FIXED_HEADER_SIZE;
+    bytes_offset += FRAME_SNAPSHOT_FIXED_AREA_SIZE;
 
     // Pack the stage object
     memcpy(

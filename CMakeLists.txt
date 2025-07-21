@@ -47,6 +47,12 @@ set(SRC_FILES
     ${SRC_DIR}/texture/texture2d.cpp
     ${SRC_DIR}/renderer/renderer.cpp
     ${SRC_DIR}/renderable_resolver/renderable_resolver.cpp
+    ${SRC_DIR}/renderable_resolver/resolver_stage.cpp
+    ${SRC_DIR}/renderable_resolver/resolver_player.cpp
+    ${SRC_DIR}/renderable_resolver/resolver_enemy.cpp
+    ${SRC_DIR}/renderable_resolver/resolver_boss.cpp
+    ${SRC_DIR}/renderable_resolver/resolver_bullet.cpp
+    ${SRC_DIR}/renderable_resolver/resolver_item.cpp
     ${SRC_DIR}/transformer/transformer.cpp
     ${SRC_DIR}/assets_factory/mesh_factory.cpp
     ${SRC_DIR}/assets_factory/shader_factory.cpp

@@ -8,7 +8,6 @@ struct SpriteDimensions {
     std::string mesh;
     int         width;
     int         height;
-    float       scale;
 };
 
 struct SpriteTextureRegion {
@@ -32,7 +31,7 @@ struct SpriteAnimation {
 
 struct Sprite {
     SpriteType          type;
-    uint8_t             name;
+    SpriteName          name;
     SpriteDimensions    dimensions;
     SpriteTextureAtlas  texture_atlas;
     std::unordered_map<std::string, SpriteAnimation> animations;

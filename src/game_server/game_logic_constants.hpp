@@ -2,6 +2,12 @@
 
 #include <cstdint>
 
+namespace math_constants {
+    constexpr double PI         = 3.14159265358979323846;
+    constexpr double TWO_PI     = PI * 2;
+    constexpr double HALF_PI    = PI / 2;
+}
+
 namespace game_logic_constants {
     constexpr float GAME_WIDTH              = 384.0f;
     constexpr float GAME_HEIGHT             = 448.0f;
@@ -9,12 +15,12 @@ namespace game_logic_constants {
     constexpr float GAME_HEIGHT_HALF        = GAME_HEIGHT / 2.0f;
 
     constexpr float PLAYER_RADIUS           = 10.0f;
-    constexpr float PLAYER_SPEED            = 0.02f;
+    constexpr float PLAYER_SPEED            = 4.0f;
     constexpr float PLAYER_BULLET_RADIUS    = 5.0f;
-    constexpr float PLAYER_BULLET_SPEED     = 20.0f;
+    constexpr float PLAYER_BULLET_SPEED     = 10.0f;
 
     constexpr float ENEMY_RADIUS            = 10.0f;
-    constexpr float ENEMY_SPEED             = 10.0f;
+    constexpr float ENEMY_SPEED             = 2.0f;
     constexpr float ENEMY_BULLET_RADIUS     = 5.0f;
-    constexpr float ENEMY_BULLET_SPEED      = 20.0f;
+    constexpr float ENEMY_BULLET_SPEED      = 2.0f;
 }

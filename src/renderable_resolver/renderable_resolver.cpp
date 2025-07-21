@@ -1,8 +1,24 @@
+#include <glm/glm.hpp>
 #include "renderable_resolver.hpp"
 #include "../config_constants.hpp"
 #include "../sprite/sprite_loader.hpp"
 #include "../transformer/transformer.hpp"
-#include "../game_server/game_logic_constants.hpp"
+
+namespace renderable_resolver {
+    glm::mat4 g_projection = glm::ortho(
+        -game_logic_constants::GAME_WIDTH_HALF,
+         game_logic_constants::GAME_WIDTH_HALF,
+        -game_logic_constants::GAME_HEIGHT_HALF,
+         game_logic_constants::GAME_HEIGHT_HALF
+    );
+
+    float g_stage_time   = 0.0f;
+    float g_player_time  = 0.0f;
+    float g_enemy_time   = 0.0f;
+    float g_boss_time    = 0.0f;
+    float g_bullet_time  = 0.0f;
+    float g_item_time    = 0.0f;
+}
 
 bool RenderableResolver::load_sprites(sol::state& lua, const std::string& registry_path) {
     // Clear sprite cache
@@ -67,8 +83,8 @@ std::vector<RenderableInstance> RenderableResolver::resolve(const FrameSnapshot&
 
     // Stage
     {
-        auto stage = frame.stage;
-        auto instance_opt = make_instance(stage);
+        const auto& stage = frame.stage;
+        auto instance_opt = resolve_instance(stage);
 
         if (instance_opt.has_value())
             renderable_instances.push_back(instance_opt.value());
@@ -77,7 +93,7 @@ std::vector<RenderableInstance> RenderableResolver::resolve(const FrameSnapshot&
     // Players
     for (const auto& player : frame.player_vector)
     {
-        auto instance_opt = make_instance(player);
+        auto instance_opt = resolve_instance(player);
 
         if (instance_opt.has_value())
             renderable_instances.push_back(instance_opt.value());
@@ -86,7 +102,7 @@ std::vector<RenderableInstance> RenderableResolver::resolve(const FrameSnapshot&
     // Enemies
     for (const auto& enemy : frame.enemy_vector)
     {
-        auto instance_opt = make_instance(enemy);
+        auto instance_opt = resolve_instance(enemy);
 
         if (instance_opt.has_value())
             renderable_instances.push_back(instance_opt.value());
@@ -95,7 +111,7 @@ std::vector<RenderableInstance> RenderableResolver::resolve(const FrameSnapshot&
     // Bosses
     for (const auto& boss : frame.boss_vector)
     {
-        auto instance_opt = make_instance(boss);
+        auto instance_opt = resolve_instance(boss);
 
         if (instance_opt.has_value())
             renderable_instances.push_back(instance_opt.value());
@@ -104,7 +120,7 @@ std::vector<RenderableInstance> RenderableResolver::resolve(const FrameSnapshot&
     // Bullets
     for (const auto& bullet : frame.bullet_vector)
     {
-        auto instance_opt = make_instance(bullet);
+        auto instance_opt = resolve_instance(bullet);
 
         if (instance_opt.has_value())
             renderable_instances.push_back(instance_opt.value());  
@@ -113,7 +129,7 @@ std::vector<RenderableInstance> RenderableResolver::resolve(const FrameSnapshot&
     // Items
     for (const auto& item : frame.item_vector)
     {
-         auto instance_opt = make_instance(item);
+         auto instance_opt = resolve_instance(item);
 
         if (instance_opt.has_value())
             renderable_instances.push_back(instance_opt.value());      
@@ -122,37 +138,22 @@ std::vector<RenderableInstance> RenderableResolver::resolve(const FrameSnapshot&
     return renderable_instances;
 }
 
-std::optional<RenderableInstance> RenderableResolver::make_instance(const StageSnapshot& stage) {
-    return std::nullopt;    // Implement soon
+std::optional<Sprite> RenderableResolver::find_sprite(const SpriteTag& tag) {
+    auto it = m_sprite_cache.find(tag);
+    auto end = m_sprite_cache.end();
+
+    return it != end ? std::make_optional(it->second) : std::nullopt;
 }
 
-std::optional<RenderableInstance> RenderableResolver::make_instance(const PlayerSnapshot& player) {
-    auto sprite_pair = m_sprite_cache.find(SpriteTag{
-        SpriteType::Player,
-        player.name,
-        player.id
-    });
-
-    if (sprite_pair == m_sprite_cache.end())
-    {
-        std::cerr << "[RenderableResolver] ERROR: Sprite not found: " << player.name << "\n";
-
-        return std::nullopt;
-    }
-
-    auto sprite = sprite_pair->second;
-
-    /*
-        Resolve resource names
-    */
-   
+std::optional<RenderableResource> RenderableResolver::resolve_resource(
+    const Sprite& sprite,
+    const std::string& anim_key
+) {
     // Resolve mesh
     const auto mesh_name = std::string(assets_constants::MESH_DIR) + "/" + sprite.dimensions.mesh;
 
     // Resolve shader
-    const auto shader_key = "idle";
-
-    auto shader_pair = sprite.animations.find(shader_key);
+    auto shader_pair = sprite.animations.find(anim_key);
     if (shader_pair == sprite.animations.end())
     {
         std::cerr << "[RenderableResolver] ERROR: Sprite { name: '"
@@ -160,7 +161,7 @@ std::optional<RenderableInstance> RenderableResolver::make_instance(const Player
                   << "', "
                   << "type: '"
                   << static_cast<int>(sprite.type)
-                  << "' } doesn't have a field: " << shader_key << "\n"; 
+                  << "' } doesn't have a field: " << anim_key << "\n"; 
 
         return std::nullopt;
     }
@@ -170,9 +171,7 @@ std::optional<RenderableInstance> RenderableResolver::make_instance(const Player
     // Resolve texture
     const auto texture_name = std::string(assets_constants::TEXTURE_DIR) + "/" + sprite.texture_atlas.image;
 
-    /*
-        Retrieve resource cache
-    */
+    // Retrieve resource cache
     const auto mesh     = m_mesh_factory.get_mesh(mesh_name);
     const auto shader   = m_shader_factory.get_shader(shader_name);
     const auto texture  = m_texture_factory.get_texture(texture_name);
@@ -198,61 +197,9 @@ std::optional<RenderableInstance> RenderableResolver::make_instance(const Player
         return std::nullopt;
     }
 
-    auto resource = RenderableResource{
+    return RenderableResource{
         mesh,
         shader,
         texture
-    }; 
-
-    /*
-        Create uniforms
-    */
-
-    // Calculate the player scale based on the view port size (px)
-    const auto player_scale_x = sprite.dimensions.width / game_logic_constants::GAME_WIDTH * sprite.dimensions.scale;
-    const auto player_scale_y = sprite.dimensions.height / game_logic_constants::GAME_HEIGHT * sprite.dimensions.scale;
-
-    // Create model matrix
-    // auto model = make_model_matrix(
-    //     player.pos.x,
-    //     player.pos.y,
-    //     player.angle,
-    //     player_scale_x,
-    //     player_scale_y
-    // );
-
-    auto offset = glm::vec2(player.pos.x, player.pos.y);
-
-    // Create time
-    /*
-        To-Do: Implement an AnimationTracker like this
-        time = anim_tracker.get_anim time(name, id);
-    */
-    auto time = 0.0f;
-
-    auto uniforms = std::unordered_map<std::string, UniformValue>{
-        {"offset", offset},
-        {"time", time}        
     };
-
-    return RenderableInstance{
-        std::make_shared<RenderableResource>(resource),
-        uniforms
-    };
-}
-
-std::optional<RenderableInstance> RenderableResolver::make_instance(const EnemySnapshot& enemy) {
-    return std::nullopt;    // Implement soon
-}
-
-std::optional<RenderableInstance> RenderableResolver::make_instance(const BossSnapshot& stage) {
-    return std::nullopt;    // Implement soon
-}
-
-std::optional<RenderableInstance> RenderableResolver::make_instance(const BulletSnapshot& bullet) {
-    return std::nullopt;    // Implement soon
-}
-
-std::optional<RenderableInstance> RenderableResolver::make_instance(const ItemSnapshot& item) {
-    return std::nullopt;    // Implement soon
 }

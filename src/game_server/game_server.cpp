@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>        // std::sqrt
 #include <algorithm>    // std::clamp
+#include <random>
 #include "game_server.hpp"
 #include "game_logic_constants.hpp"
 #include "../packet_stream/packet_stream.hpp"
@@ -139,7 +140,7 @@ void GameServerMaster::accept_loop() {
 void apply_player_input(
     PlayerSnapshot& player,
     const InputDirection& input,
-    float speed = game_logic_constants::PLAYER_SPEED
+    float speed
 ) {
     constexpr float inv_sqrt2 = 0.70710678f;
 
@@ -161,10 +162,34 @@ void apply_player_input(
         default: return;
     }
 
-    player.pos = {
-        player.pos.x = std::clamp(player.pos.x + dx * speed, -192.0f, 192.f),
-        player.pos.y = std::clamp(player.pos.y + dy * speed, -224.0f, 224.0f)
-    };
+    player.pos.x = std::clamp(player.pos.x + dx * speed, -192.0f, 192.f);
+    player.pos.y = std::clamp(player.pos.y + dy * speed, -224.0f, 224.0f);
+}
+
+bool outside(int x, int y) {
+    const auto expr_1 = x >  game_logic_constants::GAME_WIDTH_HALF;
+    const auto expr_2 = x < -game_logic_constants::GAME_WIDTH_HALF;
+    const auto expr_3 = y >  game_logic_constants::GAME_HEIGHT_HALF;
+    const auto expr_4 = y < -game_logic_constants::GAME_HEIGHT_HALF;
+
+    return expr_1 || expr_2 || expr_3 || expr_4;
+}
+
+constexpr double deg_to_rad(double deg) {
+    return deg * 3.141592653589793 / 180.0;
+}
+
+constexpr bool detect_collision(
+    const PlayerSnapshot& player, float player_radius,
+    const BulletSnapshot& bullet, float bullet_radius
+) {
+    float dx = bullet.pos.x - player.pos.x;
+    float dy = bullet.pos.y - player.pos.y;
+
+    float dist_squared = dx * dx + dy * dy;
+    float radius_sum = player_radius + bullet_radius;
+
+    return dist_squared <= radius_sum * radius_sum;
 }
 
 void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_conn) {
@@ -192,14 +217,43 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
     };
 
     FrameSnapshot frame = {};
+
+    // Stage
+    frame.stage.id = 0;
+    frame.stage.name = StageName::Default;
+
+    // Player
+    PlayerSnapshot player = {};
+    player.id = 0;
+    player.name = PlayerName::Default;
+    player.pos = {
+        0,
+        -120
+    };
+    player.vel = {
+        game_logic_constants::PLAYER_SPEED,
+        game_logic_constants::PLAYER_SPEED
+    };
+    player.lives = 1;
+    frame.player_vector.push_back(player);
     frame.player_count = 1;
 
-    PlayerSnapshot player = {};
-    frame.player_vector.push_back(player);
+    // Enemy
+    EnemySnapshot enemy = {};
+    enemy.id = 0;
+    enemy.name = EnemyName::Default;
+    enemy.pos = {
+        0,
+        120
+    };
+    enemy.vel = {
+        game_logic_constants::ENEMY_SPEED,
+        game_logic_constants::ENEMY_SPEED
+    };
+    frame.enemy_vector.push_back(enemy);
+    frame.enemy_count = 1;
 
     ArrowState arrow_state = {};
-
-    auto quit = false;
 
     // msec / FPS
     constexpr auto target_frame_duration = std::chrono::milliseconds(1000 / 60);
@@ -228,9 +282,21 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
     packet_stream.send_packet(make_packet<ServerGameResponse>({}));
     std::cout << "[GameServerMaster] DEBUG: Server game response has been sent" << "\n";
 
+    auto quit = false;
+    auto frame_count = 0;
+    auto bullet_id = 0;
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    // Create a distribution in the range [0, 359]
+    std::uniform_int_distribution<> dist(0, 359);
+
     // Game logic loop
     while (m_running && !quit)
     {
+        frame_count++;
+
         auto frame_start = std::chrono::steady_clock::now();
 
         // Check if the recv thread is alive
@@ -288,9 +354,152 @@ void GameServerMaster::handle_client(std::shared_ptr<ClientConnection> client_co
             }
         }
 
+        /*
+            Logic update
+        */
+        // Update player
         auto direction = get_direction_from_arrows(arrow_state);
-        apply_player_input(frame.player_vector[0], direction);
-                
+        apply_player_input(frame.player_vector[0], direction, frame.player_vector[0].vel.x);
+        
+        // Update enemy direction
+        auto& enemy = frame.enemy_vector[0];
+        if (enemy.pos.x > game_logic_constants::GAME_WIDTH_HALF)
+        {
+            enemy.vel.x = -game_logic_constants::ENEMY_SPEED;
+        }
+        else if (enemy.pos.x < -game_logic_constants::GAME_WIDTH_HALF)
+        {
+            enemy.vel.x = game_logic_constants::ENEMY_SPEED;
+        }
+        
+        if (enemy.pos.y > game_logic_constants::GAME_HEIGHT_HALF)
+        {
+            enemy.vel.y = -game_logic_constants::ENEMY_SPEED;
+        }
+        else if (enemy.pos.y < 60)
+        {
+            enemy.vel.y = game_logic_constants::ENEMY_SPEED;
+        }
+
+        // Move enemy
+        if ((frame_count % 360) < 120)
+        {
+            frame.enemy_vector[0].pos.x += frame.enemy_vector[0].vel.x;
+            frame.enemy_vector[0].pos.y += frame.enemy_vector[0].vel.y;
+        }
+
+        // Circle shot
+        else if ((frame_count % 360) < 240 && frame_count % 60 == 0)
+        {
+            constexpr double two_pi = 2*math_constants::PI;
+            constexpr double step = two_pi / 8;
+
+            for (double r = 0; r < two_pi; r += step)
+            {
+                auto bullet = BulletSnapshot{};
+
+                bullet.id = bullet_id++;
+                bullet.name = BulletName::BigRed;
+                bullet.pos = frame.enemy_vector[0].pos;
+                bullet.vel = {
+                    game_logic_constants::ENEMY_BULLET_SPEED * std::cos(static_cast<float>(r)),
+                    game_logic_constants::ENEMY_BULLET_SPEED * std::sin(static_cast<float>(r))
+                };
+                bullet.angle = std::atan2(bullet.vel.y, bullet.vel.x) - math_constants::HALF_PI;
+                frame.bullet_vector.push_back(bullet);
+                frame.bullet_count++;
+            }
+        }
+
+        // Homing shot
+        else if ((frame_count % 360) < 360 && frame_count % 6 == 0)
+        {
+            float vx = frame.player_vector[0].pos.x - frame.enemy_vector[0].pos.x;
+            float vy = frame.player_vector[0].pos.y - frame.enemy_vector[0].pos.y;
+
+            float length = std::sqrt(vx * vx + vy * vy);
+
+            float dx = 1.0f;
+            float dy = 1.0f;
+
+            if (length != 0.0f)
+            {
+                dx = vx / length * 4.0f;
+                dy = vy / length * 4.0f;
+            }
+
+            auto bullet = BulletSnapshot{};
+
+            bullet.id = bullet_id++;
+            bullet.name = BulletName::WedgeRed;
+            bullet.pos = frame.enemy_vector[0].pos;
+            bullet.vel = { dx, dy };
+            bullet.angle = std::atan2(dy, dx) - math_constants::HALF_PI;
+            frame.bullet_vector.push_back(bullet);
+            frame.bullet_count++;
+        }
+
+        // Random shot
+        if (frame_count % 120 == 0 && frame_count > 120)
+        {
+            constexpr size_t number_of_rand_shot = 8;
+
+            for (size_t i = 0; i < number_of_rand_shot; i++)
+            {
+                const double rand_deg = dist(gen);
+                const float rad = static_cast<float>(deg_to_rad(rand_deg));
+                const float dx = cos(rad) * 2;
+                const float dy = sin(rad) * 2;
+
+                auto bullet = BulletSnapshot{};
+
+                bullet.id = bullet_id++;
+                bullet.name = static_cast<BulletName>(i % 8 + 1);
+                bullet.pos = frame.enemy_vector[0].pos;
+                bullet.vel = { dx, dy };
+                bullet.angle = std::atan2(dy, dx) - math_constants::HALF_PI;
+                frame.bullet_vector.push_back(bullet);
+                frame.bullet_count++;
+            }
+        }
+
+        // Update and detect collision of bullets
+        for (auto& bullet : frame.bullet_vector)
+        {
+            bullet.pos.x += bullet.vel.x;
+            bullet.pos.y += bullet.vel.y;
+
+            const auto collided = detect_collision(
+                frame.player_vector[0],
+                game_logic_constants::PLAYER_RADIUS,
+                bullet,
+                game_logic_constants::PLAYER_BULLET_RADIUS
+            );
+            
+            if (collided)
+            {
+                frame.player_vector[0].lives = 0;
+                frame.state = frame.state | GameState::GameOver;
+            }
+        }
+
+        // Remove the dead bullets
+        auto& vec = frame.bullet_vector;
+        for (size_t i = 0; i < vec.size(); )
+        {
+            if (outside(vec[i].pos.x, vec[i].pos.y))
+            {
+                std::swap(vec[i], vec.back());
+                vec.pop_back();
+                frame.bullet_count--;
+            }
+            else
+            {
+                i++;
+            }
+        }
+
+        // Send frame
         const auto packet = make_packet<FrameSnapshot>(frame);
         packet_stream.send_packet(packet);
 

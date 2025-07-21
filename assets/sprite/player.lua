@@ -2,17 +2,16 @@ game_vars = require("game_vars")
 
 return {
     type = game_vars.types.player,
-    name = game_vars.player_names.unknown,
+    name = game_vars.player_names.default,
 
     dimensions = {
         mesh    = "rect_2d.lua",
-        width   = 32,
-        height  = 48,
-        scale   = 1.0
+        width   = 48,
+        height  = 64
     },
 
     texture_atlas = {
-        image = "zunmon_3002.png",
+        image = "zunmon_3005.png",
 
         regions = {
             normal = {
@@ -28,7 +27,13 @@ return {
         idle = {
             shader = "green_aura.lua",
             region = "normal",
-            duration = 2.0,
+            duration = 0.0,
+            loop = false
+        },
+        dead = {
+            shader = "transparent.lua",
+            region = "normal",
+            duration = 0.0,
             loop = false
         }
     }

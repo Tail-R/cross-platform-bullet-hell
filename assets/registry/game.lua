@@ -1,10 +1,15 @@
+local stage = require("stage")
 local player = require("player")
+local enemy = require("enemy")
+local bullets = require("bullets")
 
 return {
-    stages  = {},
+    stages  = { stage },
     players = { player },
-    enemies = {},
-    bosses  = {},
+    enemies = { enemy },
+    bosses  = {
+        unpack(bullets)
+    },
     bullets = {},
     items   = {}
 }

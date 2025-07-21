@@ -18,27 +18,26 @@ namespace {
         }
         else
         {
-            std::cerr << "[parse_sprite] WARNING: 'type' is missing." << "\n";
+            std::cerr << "[parse_sprite] WARNING: 'type' is missing" << "\n";
         }
 
         // Name
-        sprite.name = sprite_tbl.get_or("name", 0);
+        sprite.name = sprite_tbl.get_or("name", 0); // The '0' is a default value of XXXName
 
         // Dimensions
         sol::optional<sol::table> dim_opt = sprite_tbl["dimensions"];
 
-        if (!dim_opt.has_value())
+        if (dim_opt.has_value())
         {
-            std::cerr << "[parse_sprite] ERROR: Missing 'dimensions'." << "\n";
-
-            return sprite;
+            sol::table dim = dim_opt.value();
+            sprite.dimensions.mesh   = dim.get_or("mesh",   std::string{});
+            sprite.dimensions.width  = dim.get_or("width",  0.0f);
+            sprite.dimensions.height = dim.get_or("height", 0.0f);
         }
-
-        sol::table dim = dim_opt.value();
-        sprite.dimensions.mesh   = dim.get_or("mesh",   std::string{});
-        sprite.dimensions.width  = dim.get_or("width",  0.0f);
-        sprite.dimensions.height = dim.get_or("height", 0.0f);
-        sprite.dimensions.scale  = dim.get_or("scale",  1.0f);
+        else
+        {
+            std::cerr << "[parse_sprite] ERROR: Missing 'dimensions'" << "\n";
+        }
 
         // Texture atlas
         sol::optional<sol::table> atlas_opt = sprite_tbl["texture_atlas"];
@@ -61,7 +60,7 @@ namespace {
                 {
                     if (!value.is<sol::table>())
                     {
-                        std::cerr << "[parse_sprite] WARNING: Invalid region table. Skipped." << "\n";
+                        std::cerr << "[parse_sprite] WARNING: Skipped an invalid region table" << "\n";
 
                         continue;
                     }
@@ -90,7 +89,7 @@ namespace {
             {
                 if (!value.is<sol::table>())
                 {
-                    std::cerr << "[parse_sprite] WARNING: Invalid animation table. Skipped." << "\n";
+                    std::cerr << "[parse_sprite] WARNING: Skipped an invalid animation table" << "\n";
 
                     continue;
                 }
@@ -115,7 +114,11 @@ namespace {
 using Sprites = std::vector<Sprite>;
 
 std::optional<Sprites> load_sprite_registry(sol::state &lua, const std::string &registry_path) {
-    sol::protected_function_result result = lua.safe_script_file(registry_path, &sol::script_pass_on_error);
+    // Safe version of the 'script_file'. It doesn't throw an error.
+    sol::protected_function_result result = lua.safe_script_file(
+        registry_path,
+        &sol::script_pass_on_error
+    );
 
     if (!result.valid())
     {
@@ -130,11 +133,12 @@ std::optional<Sprites> load_sprite_registry(sol::state &lua, const std::string &
 
     if (!obj.is<sol::table>())
     {
-        std::cerr << "[load_sprite_registry] ERROR: Lua file did not return a table.\n";
+        std::cerr << "[load_sprite_registry] ERROR: Lua file did not return a table" << "\n";
 
         return std::nullopt;
     }
 
+    // Unwrap
     sol::table sprite_list = obj.as<sol::table>();
     Sprites sprites;
 
@@ -144,7 +148,7 @@ std::optional<Sprites> load_sprite_registry(sol::state &lua, const std::string &
 
         if (!category_value.is<sol::table>())
         {
-            std::cerr << "[load_sprite_registry] WARNING: Category '" << category << "' is not a table. Skipped." << "\n";
+            std::cerr << "[load_sprite_registry] WARNING: Category '" << category << "' is not a table" << "\n";
 
             continue;
         }
@@ -155,7 +159,7 @@ std::optional<Sprites> load_sprite_registry(sol::state &lua, const std::string &
         {
             if (!sprite_array[i].is<sol::table>())
             {
-                std::cerr << "[load_sprite_registry] WARNING: Invalid sprite entry in category '" << category << "' at index " << i << ". Skipped." << "\n";
+                std::cerr << "[load_sprite_registry] WARNING: Invalid sprite entry in category '" << category << "' at index " << i << "\n";
 
                 continue;
             }

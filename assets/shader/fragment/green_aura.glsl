@@ -3,7 +3,7 @@
 in vec2 TexCoord;
 out vec4 FragColor;
 
-uniform sampler2D ourTexture;
+layout(binding = 0) uniform sampler2D ourTexture;
 uniform float time;
 
 // ハッシュ
@@ -51,7 +51,7 @@ void main() {
     // オーラの強さ（透明部分を中心に強調）
     float flameAura = baseAura * flameNoise * 4.0 * (1.0 - texColor.a);
 
-    // 色合い：赤→橙
+    // 色合い：緑
     vec3 flameColor = mix(vec3(0.0, 0.8, 0.6), vec3(0.0, 0.4, 0.0), flameNoise);
 
     vec3 finalColor = mix(texColor.rgb, flameColor, flameAura);
